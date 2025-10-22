@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import re
+import textwrap
 
 @dataclass(slots=True, frozen=True)
 class Trace:
@@ -10,10 +11,11 @@ class Trace:
     bridges: list["Bridge"]
 
     def __repr__(self):
-        res = [f"Trunk <{self.id}>"]
+        res = []
         for bridge in self.bridges:
-            res.append("\t" + repr(bridge))
-        return '\n'.join(res)
+            res.append(repr(bridge))
+        indented = textwrap.indent('\n'.join(res), '    ')
+        return f"Trunk<{self.id}>\n{indented}"
 
 @dataclass(slots=True, frozen=True)
 class Bridge:
@@ -24,10 +26,11 @@ class Bridge:
     bridges: list["Bridge"]
 
     def __repr__(self):
-        res = [f"Bridge <{self.from_guard}>"]
+        res = []
         for bridge in self.bridges:
-            res.append("\t" + repr(bridge))
-        return '\n'.join(res)
+            res.append(repr(bridge))
+        indented = textwrap.indent('\n'.join(res), '    ')
+        return f"Bridge<{self.from_guard}>\n{indented}"
 
 HEX_PAT = "0x\w+"
 
