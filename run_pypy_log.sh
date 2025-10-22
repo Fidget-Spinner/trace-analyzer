@@ -1,0 +1,1 @@
+PYPYLOG=jit-log-opt,jit-summary,jit-backend-counts:exponential pypy3 ./src/test/exponential.py
