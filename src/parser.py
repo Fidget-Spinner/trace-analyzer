@@ -30,7 +30,8 @@ class Trace:
         for bridge in self.bridges:
             res.append(repr(bridge))
         indented = textwrap.indent('\n'.join(res), '    ')
-        return f"Trunk<{self.id}, backedge={self.back_count}, enter_count={self.computed_enter_count}>\n{indented}"
+        return f"Trunk<{self.id}, backedge={self.back_count}, enter_count={self.computed_enter_count}, \
+pct_completed={self.back_count / self.computed_enter_count * 100:.2f}%>\n{indented}"
 
 @dataclass(slots=True)
 class Bridge:
@@ -61,7 +62,8 @@ class Bridge:
         for bridge in self.bridges:
             res.append(repr(bridge))
         indented = textwrap.indent('\n'.join(res), '    ')
-        return f"Bridge<{self.from_guard}, backedge={self.back_count}, enter_count={self.computed_enter_count}>\n{indented}"
+        return f"Bridge<{self.from_guard}, backedge={self.back_count}, enter_count={self.computed_enter_count} \
+pct_completed={self.back_count / self.computed_enter_count * 100:.2f}%>\n{indented}"
 
 HEX_PAT = "0x\w+"
 
@@ -109,7 +111,14 @@ def add_bridge_count(all_entries: list[Bridge], guard_id: int, count: int):
     assert False, "Could not find bridge trace"
 
 
-def reverse_breadth_first(all_entries: list[Trace]):
+def compute_entry_counts(all_entries: list[Trace]):
+    # Computed entry jump counts.
+    # The algorithm is based on as simple idea: for very backwards jump occured in the trunk,
+    # then add one to entry count, as it must have entered the trunk for it to jump backwards.
+    # For every backward jump occured in a side trace, add one to entry count of the trunk, for similar reasons.
+    # As this is a trace tree, do this in bottom-up order (reverse postorder) to get the correct numbers.
+
+    # Do a reverse breadth-first traversal first.
     queue = list(all_entries)
     order = []
     while queue:
@@ -119,7 +128,12 @@ def reverse_breadth_first(all_entries: list[Trace]):
             bridge._backpointer = nxt
             queue.append(bridge)
     order.reverse()
-    return order
+
+    for node in order:
+        node.computed_enter_count += node.back_count
+        if node._backpointer:
+            node._backpointer.computed_enter_count += node.computed_enter_count
+
 
 def parse_and_build_trace_trees(inputfile):
     entries = []
@@ -171,17 +185,8 @@ def parse_and_build_trace_trees(inputfile):
         for guard in loop.guards:
             if bridge := find_bridge(all_bridges, guard):
                 loop.bridges.append(bridge)
-    # Computed entry jump counts.
-    # The algorithm is based on as simple idea: for very backwards jump occured in the trunk,
-    # then add one to entry count, as it must have entered the trunk for it to jump backwards.
-    # For every backward jump occured in a side trace, add one to entry count of the trunk, for similar reasons.
-    # As this is a trace tree, do this in bottom-up order (reverse postorder) to get the correct numbers.
-    # print(all_bridges)
-    order = reverse_breadth_first(entries)
-    for node in order:
-        node.computed_enter_count += node.back_count
-        if node._backpointer:
-            node._backpointer.computed_enter_count += node.computed_enter_count
+
+    compute_entry_counts(entries)
 
     for entry in entries:
         print(entry)

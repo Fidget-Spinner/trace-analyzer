@@ -1,4 +1,4 @@
-[68737860d01] {jit-log-opt-loop
+[2fa8ddfae1e9] {jit-log-opt-loop
 # Loop 1 (foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER) : loop with 163 ops
 [p0, p1]
 +419: i2 = getfield_gc_i(p0, descr=<FieldS pypy.interpreter.pyframe.PyFrame.inst_last_instr 40>)
@@ -14,30 +14,30 @@
 +466: p17 = getarrayitem_gc_r(p7, 4, descr=<ArrayP 8>)
 +470: p19 = getarrayitem_gc_r(p7, 5, descr=<ArrayP 8>)
 +474: p21 = getarrayitem_gc_r(p7, 6, descr=<ArrayP 8>)
-+478: label(p0, p1, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, descr=TargetToken(128319831884320))
++478: label(p0, p1, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, descr=TargetToken(140591748465184))
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
-+536: guard_value(i4, 5, descr=<Guard0x74b4c9ff8020>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
-+546: guard_isnull(p5, descr=<Guard0x74b4c9fe2678>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
-+555: guard_class(p17, 128319910354184, descr=<Guard0x74b4c9fe26b0>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
++536: guard_value(i4, 5, descr=<Guard0x7fde113a0020>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
++546: guard_isnull(p5, descr=<Guard0x7fde1138a678>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
++555: guard_class(p17, 140591836310792, descr=<Guard0x7fde1138a6b0>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
 +567: i24 = getfield_gc_i(p17, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
 +571: i25 = getfield_gc_i(p17, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeOneArgIterator.inst_stop 40 pure>)
 +575: i26 = int_lt(i24, i25)
-+578: guard_true(i26, descr=<Guard0x74b4c9fe26e8>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
++578: guard_true(i26, descr=<Guard0x7fde1138a6e8>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
 +584: i28 = int_add(i24, 1)
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#14 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#16 LOAD_GLOBAL')
 +588: setfield_gc(p17, i28, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
-+599: guard_value(p3, ConstPtr(ptr29), descr=<Guard0x74b4c9ff8070>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
-+608: guard_not_invalidated(descr=<Guard0x74b4c9fe2720>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
++599: guard_value(p3, ConstPtr(ptr29), descr=<Guard0x7fde113a0070>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
++608: guard_not_invalidated(descr=<Guard0x7fde1138a720>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#18 LOAD_METHOD')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#20 CALL_METHOD')
-+608: guard_isnull(p21, descr=<Guard0x74b4c9fe2758>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
++608: guard_isnull(p21, descr=<Guard0x7fde1138a758>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
 +624: p31 = getfield_gc_r(ConstPtr(ptr30), descr=<FieldP pypy.module._random.interp_random.W_Random.inst__rnd 8>)
 +628: i33 = call_i(ConstClass(Random.genrand32), p31, descr=<Calli 8 r EF=5>)
-+718: guard_no_exception(descr=<Guard0x74b4c9ff80c0>) [p0, p6, p9, p11, p13, p17, p1, i33, p31, i24]
++718: guard_no_exception(descr=<Guard0x7fde113a00c0>) [p0, p6, p9, p11, p13, p17, p1, i33, p31, i24]
 +732: i35 = uint_rshift(i33, 5)
 +736: i37 = call_i(ConstClass(Random.genrand32), p31, descr=<Calli 8 r EF=5>)
-+802: guard_no_exception(descr=<Guard0x74b4c9ff8110>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
++802: guard_no_exception(descr=<Guard0x7fde113a0110>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
 +816: i39 = uint_rshift(i37, 6)
 +823: f40 = cast_int_to_float(i35)
 +828: f42 = float_mul(f40, 67108864.000000)
@@ -45,33 +45,33 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 +842: f44 = float_add(f42, f43)
 +847: f46 = float_mul(f44, 0.000000)
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#22 LOAD_FAST')
-+856: guard_nonnull_class(p13, ConstClass(W_FloatObject), descr=<Guard0x74b4c9ff8160>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
++856: guard_nonnull_class(p13, ConstClass(W_FloatObject), descr=<Guard0x7fde113a0160>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#24 COMPARE_OP')
 +882: f48 = getfield_gc_f(p13, descr=<FieldF pypy.objspace.std.floatobject.W_FloatObject.inst_floatval 8 pure>)
 +888: i49 = float_le(f46, f48)
-+893: guard_true(i49, descr=<Guard0x74b4c9fe2790>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
++893: guard_true(i49, descr=<Guard0x7fde1138a790>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#26 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#28 LOAD_FAST')
-+899: guard_nonnull_class(p9, ConstClass(W_IntObject), descr=<Guard0x74b4c9ff81b0>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
++899: guard_nonnull_class(p9, ConstClass(W_IntObject), descr=<Guard0x7fde113a01b0>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#30 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#32 BINARY_ADD')
 +925: i51 = getfield_gc_i(p9, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
 +929: i52 = int_add_ovf(i51, i24)
-+932: guard_no_overflow(descr=<Guard0x74b4c9fe27c8>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
++932: guard_no_overflow(descr=<Guard0x7fde1138a7c8>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#34 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#36 BINARY_ADD')
 +938: i54 = int_add_ovf(i52, 3)
-+942: guard_no_overflow(descr=<Guard0x74b4c9fe2800>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
++942: guard_no_overflow(descr=<Guard0x7fde1138a800>) [p0, p6, p9, p11, p13, p17, p1, i35, i37, i24]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#38 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#40 JUMP_FORWARD')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#50 LOAD_GLOBAL')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#52 LOAD_METHOD')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#54 CALL_METHOD')
 +948: i56 = call_i(ConstClass(Random.genrand32), p31, descr=<Calli 8 r EF=5>)
-+1026: guard_no_exception(descr=<Guard0x74b4c9ff8200>) [p0, p6, p11, p13, p17, p1, i56, p31, i54, i24]
++1026: guard_no_exception(descr=<Guard0x7fde113a0200>) [p0, p6, p11, p13, p17, p1, i56, p31, i54, i24]
 +1040: i58 = uint_rshift(i56, 5)
 +1044: i60 = call_i(ConstClass(Random.genrand32), p31, descr=<Calli 8 r EF=5>)
-+1110: guard_no_exception(descr=<Guard0x74b4c9ff8250>) [p0, p6, p11, p13, p17, p1, i58, i60, i54, i24]
++1110: guard_no_exception(descr=<Guard0x7fde113a0250>) [p0, p6, p11, p13, p17, p1, i58, i60, i54, i24]
 +1124: i62 = uint_rshift(i60, 6)
 +1131: f63 = cast_int_to_float(i58)
 +1136: f65 = float_mul(f63, 67108864.000000)
@@ -81,36 +81,36 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#56 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#58 COMPARE_OP')
 +1164: i70 = float_le(f69, f48)
-+1179: guard_false(i70, descr=<Guard0x74b4c9fe2838>) [p0, p6, p11, p13, p17, p1, i58, i60, i54, i24]
++1179: guard_false(i70, descr=<Guard0x7fde1138a838>) [p0, p6, p11, p13, p17, p1, i58, i60, i54, i24]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#60 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#76 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#78 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#80 BINARY_ADD')
 +1185: i72 = int_add_ovf(i54, 3)
-+1192: guard_no_overflow(descr=<Guard0x74b4c9fe2870>) [p0, p6, p11, p13, p17, p1, i58, i60, i54, i24]
++1192: guard_no_overflow(descr=<Guard0x7fde1138a870>) [p0, p6, p11, p13, p17, p1, i58, i60, i54, i24]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#82 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6--1~#84 JUMP_ABSOLUTE')
-+1198: i74 = getfield_raw_i(128319926805120, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++1198: i74 = getfield_raw_i(140591852761728, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
 +1211: i76 = int_lt(i74, 0)
-+1215: guard_false(i76, descr=<Guard0x74b4c9fe28a8>) [p0, p6, p11, p13, p17, p1, i58, i60, i54, i24]
++1215: guard_false(i76, descr=<Guard0x7fde1138a8a8>) [p0, p6, p11, p13, p17, p1, i58, i60, i54, i24]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
 +1221: i77 = same_as_i(i28)
-+1224: label(p0, p1, p6, i72, p11, p13, i24, p17, i77, i25, p31, f48, descr=TargetToken(128319831884384))
++1224: label(p0, p1, p6, i72, p11, p13, i24, p17, i77, i25, p31, f48, descr=TargetToken(140591748465248))
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
 +1240: i78 = int_lt(i77, i25)
-+1243: guard_true(i78, descr=<Guard0x74b4c9ff82a0>) [p0, p6, p11, p13, p17, p1, i77, i25, i24, i72]
++1243: guard_true(i78, descr=<Guard0x7fde113a02a0>) [p0, p6, p11, p13, p17, p1, i77, i25, i24, i72]
 +1249: i80 = int_add(i77, 1)
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#14 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#16 LOAD_GLOBAL')
 +1253: setfield_gc(p17, i80, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
-+1264: guard_not_invalidated(descr=<Guard0x74b4c9ff82f0>) [p0, p6, p11, p13, p17, p1, i77, None, i72]
++1264: guard_not_invalidated(descr=<Guard0x7fde113a02f0>) [p0, p6, p11, p13, p17, p1, i77, None, i72]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#18 LOAD_METHOD')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#20 CALL_METHOD')
 +1264: i83 = call_i(ConstClass(Random.genrand32), p31, descr=<Calli 8 r EF=5>)
-+1333: guard_no_exception(descr=<Guard0x74b4c9ff8340>) [p0, p6, p11, p13, p17, p1, i83, p31, i77, None, i72]
++1333: guard_no_exception(descr=<Guard0x7fde113a0340>) [p0, p6, p11, p13, p17, p1, i83, p31, i77, None, i72]
 +1347: i85 = uint_rshift(i83, 5)
 +1351: i87 = call_i(ConstClass(Random.genrand32), p31, descr=<Calli 8 r EF=5>)
-+1417: guard_no_exception(descr=<Guard0x74b4c9ff8390>) [p0, p6, p11, p13, p17, p1, i85, i87, i77, None, i72]
++1417: guard_no_exception(descr=<Guard0x7fde113a0390>) [p0, p6, p11, p13, p17, p1, i85, i87, i77, None, i72]
 +1431: i89 = uint_rshift(i87, 6)
 +1438: f90 = cast_int_to_float(i85)
 +1443: f92 = float_mul(f90, 67108864.000000)
@@ -120,27 +120,27 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#22 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#24 COMPARE_OP')
 +1471: i97 = float_le(f96, f48)
-+1486: guard_true(i97, descr=<Guard0x74b4c9fe28e0>) [p0, p6, p11, p13, p17, p1, i85, i87, i77, None, i72]
++1486: guard_true(i97, descr=<Guard0x7fde1138a8e0>) [p0, p6, p11, p13, p17, p1, i85, i87, i77, None, i72]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#26 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#28 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#30 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#32 BINARY_ADD')
 +1492: i98 = int_add_ovf(i72, i77)
-+1498: guard_no_overflow(descr=<Guard0x74b4c9fe2918>) [p0, p6, p11, p13, p17, p1, i85, i87, i77, None, i72]
++1498: guard_no_overflow(descr=<Guard0x7fde1138a918>) [p0, p6, p11, p13, p17, p1, i85, i87, i77, None, i72]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#34 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#36 BINARY_ADD')
 +1504: i100 = int_add_ovf(i98, 3)
-+1508: guard_no_overflow(descr=<Guard0x74b4c9fe2950>) [p0, p6, p11, p13, p17, p1, i85, i87, i77, None, i72]
++1508: guard_no_overflow(descr=<Guard0x7fde1138a950>) [p0, p6, p11, p13, p17, p1, i85, i87, i77, None, i72]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#38 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-10~#40 JUMP_FORWARD')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#50 LOAD_GLOBAL')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#52 LOAD_METHOD')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#54 CALL_METHOD')
 +1514: i102 = call_i(ConstClass(Random.genrand32), p31, descr=<Calli 8 r EF=5>)
-+1583: guard_no_exception(descr=<Guard0x74b4c9ff83e0>) [p0, p6, p11, p13, p17, p1, i102, p31, i100, i77, None, None]
++1583: guard_no_exception(descr=<Guard0x7fde113a03e0>) [p0, p6, p11, p13, p17, p1, i102, p31, i100, i77, None, None]
 +1597: i104 = uint_rshift(i102, 5)
 +1601: i106 = call_i(ConstClass(Random.genrand32), p31, descr=<Calli 8 r EF=5>)
-+1667: guard_no_exception(descr=<Guard0x74b4c9ff8430>) [p0, p6, p11, p13, p17, p1, i104, i106, i100, i77, None, None]
++1667: guard_no_exception(descr=<Guard0x7fde113a0430>) [p0, p6, p11, p13, p17, p1, i104, i106, i100, i77, None, None]
 +1681: i108 = uint_rshift(i106, 6)
 +1688: f109 = cast_int_to_float(i104)
 +1693: f111 = float_mul(f109, 67108864.000000)
@@ -150,24 +150,24 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#56 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#58 COMPARE_OP')
 +1721: i116 = float_le(f115, f48)
-+1736: guard_false(i116, descr=<Guard0x74b4c9fe2988>) [p0, p6, p11, p13, p17, p1, i104, i106, i100, i77, None, None]
++1736: guard_false(i116, descr=<Guard0x7fde1138a988>) [p0, p6, p11, p13, p17, p1, i104, i106, i100, i77, None, None]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#60 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#76 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#78 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#80 BINARY_ADD')
 +1742: i118 = int_add_ovf(i100, 3)
-+1749: guard_no_overflow(descr=<Guard0x74b4c9fe29c0>) [p0, p6, p11, p13, p17, p1, i104, i106, i100, i77, None, None]
++1749: guard_no_overflow(descr=<Guard0x7fde1138a9c0>) [p0, p6, p11, p13, p17, p1, i104, i106, i100, i77, None, None]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#82 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6--1~#84 JUMP_ABSOLUTE')
-+1755: i120 = getfield_raw_i(128319926805120, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++1755: i120 = getfield_raw_i(140591852761728, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
 +1768: i122 = int_lt(i120, 0)
-+1772: guard_false(i122, descr=<Guard0x74b4c9fe29f8>) [p0, p6, p11, p13, p17, p1, i104, i106, i100, i77, None, None]
++1772: guard_false(i122, descr=<Guard0x7fde1138a9f8>) [p0, p6, p11, p13, p17, p1, i104, i106, i100, i77, None, None]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
-+1778: jump(p0, p1, p6, i118, p11, p13, i77, p17, i80, i25, p31, f48, descr=TargetToken(128319831884384))
++1778: jump(p0, p1, p6, i118, p11, p13, i77, p17, i80, i25, p31, f48, descr=TargetToken(140591748465248))
 +1808: --end of the loop--
-[68737943e41] jit-log-opt-loop}
-[68737b420c3] {jit-log-opt-bridge
-# bridge out of Guard 0x74b4c9fe2790 with 62 ops
+[2fa8de09a77d] jit-log-opt-loop}
+[2fa8de2750f9] {jit-log-opt-bridge
+# bridge out of Guard 0x7fde1138a790 with 62 ops
 [p0, p1, p2, p3, p4, p5, p6, i7, i8, i9]
 +134: i11 = uint_rshift(i8, 6)
 +138: f12 = cast_int_to_float(i7)
@@ -176,30 +176,30 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 +163: f16 = float_add(f14, f15)
 +167: f18 = float_mul(f16, 0.000000)
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#22 LOAD_FAST')
-+173: guard_nonnull_class(p4, ConstClass(W_FloatObject), descr=<Guard0x74b4c9ff8480>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
++173: guard_nonnull_class(p4, ConstClass(W_FloatObject), descr=<Guard0x7fde113a0480>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#24 COMPARE_OP')
 +192: f20 = getfield_gc_f(p4, descr=<FieldF pypy.objspace.std.floatobject.W_FloatObject.inst_floatval 8 pure>)
 +198: i21 = float_le(f18, f20)
-+202: guard_false(i21, descr=<Guard0x74b4c9fe2cd0>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
++202: guard_false(i21, descr=<Guard0x7fde1138acd0>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#26 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-12~#42 LOAD_FAST')
-+208: guard_nonnull_class(p2, ConstClass(W_IntObject), descr=<Guard0x74b4c9ff84d0>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
++208: guard_nonnull_class(p2, ConstClass(W_IntObject), descr=<Guard0x7fde113a04d0>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-12~#44 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-12~#46 BINARY_ADD')
 +233: i23 = getfield_gc_i(p2, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
 +237: i25 = int_add_ovf(i23, 3)
-+241: guard_no_overflow(descr=<Guard0x74b4c9fe2d08>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
++241: guard_no_overflow(descr=<Guard0x7fde1138ad08>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-12~#48 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#50 LOAD_GLOBAL')
-+247: guard_not_invalidated(descr=<Guard0x74b4c9fe2d40>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
++247: guard_not_invalidated(descr=<Guard0x7fde1138ad40>) [p0, p1, p2, p3, p4, p5, p6, f18, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#52 LOAD_METHOD')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#54 CALL_METHOD')
 +254: p27 = getfield_gc_r(ConstPtr(ptr26), descr=<FieldP pypy.module._random.interp_random.W_Random.inst__rnd 8>)
 +258: i29 = call_i(ConstClass(Random.genrand32), p27, descr=<Calli 8 r EF=5>)
-+339: guard_no_exception(descr=<Guard0x74b4c9ff8520>) [p0, p1, p3, p4, p5, p6, i29, p27, i25, None, i9]
++339: guard_no_exception(descr=<Guard0x7fde113a0520>) [p0, p1, p3, p4, p5, p6, i29, p27, i25, None, i9]
 +353: i32 = uint_rshift(i29, 5)
 +357: i34 = call_i(ConstClass(Random.genrand32), p27, descr=<Calli 8 r EF=5>)
-+423: guard_no_exception(descr=<Guard0x74b4c9ff8570>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
++423: guard_no_exception(descr=<Guard0x7fde113a0570>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
 +437: i36 = uint_rshift(i34, 6)
 +444: f37 = cast_int_to_float(i32)
 +449: f39 = float_mul(f37, 67108864.000000)
@@ -209,32 +209,32 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#56 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#58 COMPARE_OP')
 +476: i44 = float_le(f43, f20)
-+490: guard_true(i44, descr=<Guard0x74b4c9fe2d78>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
++490: guard_true(i44, descr=<Guard0x7fde1138ad78>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#60 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#62 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#64 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#66 BINARY_ADD')
 +496: i45 = int_add_ovf(i25, i9)
-+502: guard_no_overflow(descr=<Guard0x74b4c9fe2db0>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
++502: guard_no_overflow(descr=<Guard0x7fde1138adb0>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#68 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#70 BINARY_ADD')
 +508: i47 = int_add_ovf(i45, 3)
-+512: guard_no_overflow(descr=<Guard0x74b4c9fe2de8>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
++512: guard_no_overflow(descr=<Guard0x7fde1138ade8>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#72 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#74 JUMP_ABSOLUTE')
-+518: i49 = getfield_raw_i(128319926805120, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++518: i49 = getfield_raw_i(140591852761728, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
 +531: i51 = int_lt(i49, 0)
-+535: guard_false(i51, descr=<Guard0x74b4c9fe2e20>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
++535: guard_false(i51, descr=<Guard0x7fde1138ae20>) [p0, p1, p3, p4, p5, p6, i32, i34, i25, None, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
 +541: i52 = getfield_gc_i(p5, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
 +552: i53 = getfield_gc_i(p5, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeOneArgIterator.inst_stop 40 pure>)
 +556: i55 = int_ge(i53, -9223372036854775807)
-+569: guard_true(i55, descr=<Guard0x74b4c9ff85c0>) [p0, p1, p3, p4, p5, p6, i47, None, None, i9]
-+575: jump(p0, p6, p1, i47, p3, p4, i9, p5, i52, i53, p27, f20, descr=TargetToken(128319831884384))
++569: guard_true(i55, descr=<Guard0x7fde113a05c0>) [p0, p1, p3, p4, p5, p6, i47, None, None, i9]
++575: jump(p0, p6, p1, i47, p3, p4, i9, p5, i52, i53, p27, f20, descr=TargetToken(140591748465248))
 +608: --end of the loop--
-[68737b74fa1] jit-log-opt-bridge}
-[68737cf6f19] {jit-log-opt-bridge
-# bridge out of Guard 0x74b4c9fe2838 with 34 ops
+[2fa8de2a16a1] jit-log-opt-bridge}
+[2fa8de423ba7] {jit-log-opt-bridge
+# bridge out of Guard 0x7fde1138a838 with 34 ops
 [p0, p1, p2, p3, p4, p5, i6, i7, i8, i9]
 +86: i11 = uint_rshift(i7, 6)
 +90: f12 = cast_int_to_float(i6)
@@ -246,34 +246,34 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#58 COMPARE_OP')
 +126: f19 = getfield_gc_f(p3, descr=<FieldF pypy.objspace.std.floatobject.W_FloatObject.inst_floatval 8 pure>)
 +139: i20 = float_le(f18, f19)
-+144: guard_true(i20, descr=<Guard0x74b4c9ff8610>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++144: guard_true(i20, descr=<Guard0x7fde113a0610>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#60 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#62 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#64 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#66 BINARY_ADD')
 +150: i21 = int_add_ovf(i8, i9)
-+156: guard_no_overflow(descr=<Guard0x74b4c9fe3018>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++156: guard_no_overflow(descr=<Guard0x7fde1138b018>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#68 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#70 BINARY_ADD')
 +162: i23 = int_add_ovf(i21, 3)
-+166: guard_no_overflow(descr=<Guard0x74b4c9fe3050>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++166: guard_no_overflow(descr=<Guard0x7fde1138b050>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#72 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#74 JUMP_ABSOLUTE')
-+172: guard_not_invalidated(descr=<Guard0x74b4c9fe3088>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
-+172: i25 = getfield_raw_i(128319926805120, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++172: guard_not_invalidated(descr=<Guard0x7fde1138b088>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++172: i25 = getfield_raw_i(140591852761728, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
 +179: i27 = int_lt(i25, 0)
-+183: guard_false(i27, descr=<Guard0x74b4c9fe30c0>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++183: guard_false(i27, descr=<Guard0x7fde1138b0c0>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
 +189: i28 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
 +200: i29 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeOneArgIterator.inst_stop 40 pure>)
 +204: i31 = int_ge(i29, -9223372036854775807)
-+217: guard_true(i31, descr=<Guard0x74b4c9ff8660>) [p0, p1, p2, p3, p4, p5, i23, i9, None]
++217: guard_true(i31, descr=<Guard0x7fde113a0660>) [p0, p1, p2, p3, p4, p5, i23, i9, None]
 +230: p34 = getfield_gc_r(ConstPtr(ptr33), descr=<FieldP pypy.module._random.interp_random.W_Random.inst__rnd 8>)
-+234: jump(p0, p5, p1, i23, p2, p3, i9, p4, i28, i29, p34, f19, descr=TargetToken(128319831884384))
++234: jump(p0, p5, p1, i23, p2, p3, i9, p4, i28, i29, p34, f19, descr=TargetToken(140591748465248))
 +288: --end of the loop--
-[68737d120ad] jit-log-opt-bridge}
-[68737df4589] {jit-log-opt-bridge
-# bridge out of Guard 0x74b4c9fe28e0 with 59 ops
+[2fa8de43cc09] jit-log-opt-bridge}
+[2fa8de4fb66d] {jit-log-opt-bridge
+# bridge out of Guard 0x7fde1138a8e0 with 59 ops
 [p0, p1, p2, p3, p4, p5, i6, i7, i8, i9]
 +118: i11 = uint_rshift(i7, 6)
 +122: f12 = cast_int_to_float(i6)
@@ -285,24 +285,24 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#24 COMPARE_OP')
 +157: f19 = getfield_gc_f(p3, descr=<FieldF pypy.objspace.std.floatobject.W_FloatObject.inst_floatval 8 pure>)
 +169: i20 = float_le(f18, f19)
-+173: guard_false(i20, descr=<Guard0x74b4c9ff86b0>) [p0, p1, p2, p3, p4, p5, f18, f19, i8, i9]
++173: guard_false(i20, descr=<Guard0x7fde113a06b0>) [p0, p1, p2, p3, p4, p5, f18, f19, i8, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-9~#26 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-12~#42 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-12~#44 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-12~#46 BINARY_ADD')
 +179: i22 = int_add_ovf(i9, 3)
-+186: guard_no_overflow(descr=<Guard0x74b4c9fe3328>) [p0, p1, p2, p3, p4, p5, f18, f19, i8, i9]
++186: guard_no_overflow(descr=<Guard0x7fde1138b328>) [p0, p1, p2, p3, p4, p5, f18, f19, i8, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-12~#48 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#50 LOAD_GLOBAL')
-+192: guard_not_invalidated(descr=<Guard0x74b4c9fe3360>) [p0, p1, p2, p3, p4, p5, f18, f19, i8, i9]
++192: guard_not_invalidated(descr=<Guard0x7fde1138b360>) [p0, p1, p2, p3, p4, p5, f18, f19, i8, i9]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#52 LOAD_METHOD')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#54 CALL_METHOD')
 +199: p24 = getfield_gc_r(ConstPtr(ptr23), descr=<FieldP pypy.module._random.interp_random.W_Random.inst__rnd 8>)
 +203: i26 = call_i(ConstClass(Random.genrand32), p24, descr=<Calli 8 r EF=5>)
-+271: guard_no_exception(descr=<Guard0x74b4c9ff8700>) [p0, p1, p2, p3, p4, p5, i26, p24, i22, i8, None]
++271: guard_no_exception(descr=<Guard0x7fde113a0700>) [p0, p1, p2, p3, p4, p5, i26, p24, i22, i8, None]
 +285: i29 = uint_rshift(i26, 5)
 +289: i31 = call_i(ConstClass(Random.genrand32), p24, descr=<Calli 8 r EF=5>)
-+355: guard_no_exception(descr=<Guard0x74b4c9ff8750>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
++355: guard_no_exception(descr=<Guard0x7fde113a0750>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
 +369: i33 = uint_rshift(i31, 6)
 +376: f34 = cast_int_to_float(i29)
 +381: f36 = float_mul(f34, 67108864.000000)
@@ -312,32 +312,32 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#56 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#58 COMPARE_OP')
 +408: i41 = float_le(f40, f19)
-+422: guard_true(i41, descr=<Guard0x74b4c9fe3398>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
++422: guard_true(i41, descr=<Guard0x7fde1138b398>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#60 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#62 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#64 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#66 BINARY_ADD')
 +428: i42 = int_add_ovf(i22, i8)
-+434: guard_no_overflow(descr=<Guard0x74b4c9fe33d0>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
++434: guard_no_overflow(descr=<Guard0x7fde1138b3d0>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#68 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#70 BINARY_ADD')
 +440: i44 = int_add_ovf(i42, 3)
-+444: guard_no_overflow(descr=<Guard0x74b4c9fe3408>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
++444: guard_no_overflow(descr=<Guard0x7fde1138b408>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#72 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#74 JUMP_ABSOLUTE')
-+450: i46 = getfield_raw_i(128319926805120, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++450: i46 = getfield_raw_i(140591852761728, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
 +463: i48 = int_lt(i46, 0)
-+467: guard_false(i48, descr=<Guard0x74b4c9fe3440>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
++467: guard_false(i48, descr=<Guard0x7fde1138b440>) [p0, p1, p2, p3, p4, p5, i29, i31, i22, i8, None]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
 +473: i49 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
 +484: i50 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeOneArgIterator.inst_stop 40 pure>)
 +488: i52 = int_ge(i50, -9223372036854775807)
-+501: guard_true(i52, descr=<Guard0x74b4c9ff87a0>) [p0, p1, p2, p3, p4, p5, i44, None, i8, None]
-+507: jump(p0, p5, p1, i44, p2, p3, i8, p4, i49, i50, p24, f19, descr=TargetToken(128319831884384))
++501: guard_true(i52, descr=<Guard0x7fde113a07a0>) [p0, p1, p2, p3, p4, p5, i44, None, i8, None]
++507: jump(p0, p5, p1, i44, p2, p3, i8, p4, i49, i50, p24, f19, descr=TargetToken(140591748465248))
 +544: --end of the loop--
-[68737e23e35] jit-log-opt-bridge}
-[68737f4467f] {jit-log-opt-bridge
-# bridge out of Guard 0x74b4c9fe2988 with 34 ops
+[2fa8de523de3] jit-log-opt-bridge}
+[2fa8de659f2f] {jit-log-opt-bridge
+# bridge out of Guard 0x7fde1138a988 with 34 ops
 [p0, p1, p2, p3, p4, p5, i6, i7, i8, i9]
 +86: i11 = uint_rshift(i7, 6)
 +90: f12 = cast_int_to_float(i6)
@@ -349,34 +349,34 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#58 COMPARE_OP')
 +126: f19 = getfield_gc_f(p3, descr=<FieldF pypy.objspace.std.floatobject.W_FloatObject.inst_floatval 8 pure>)
 +139: i20 = float_le(f18, f19)
-+144: guard_true(i20, descr=<Guard0x74b4c9ff87f0>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++144: guard_true(i20, descr=<Guard0x7fde113a07f0>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#60 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#62 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#64 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#66 BINARY_ADD')
 +150: i21 = int_add_ovf(i8, i9)
-+156: guard_no_overflow(descr=<Guard0x74b4c9fe3638>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++156: guard_no_overflow(descr=<Guard0x7fde1138b638>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#68 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#70 BINARY_ADD')
 +162: i23 = int_add_ovf(i21, 3)
-+166: guard_no_overflow(descr=<Guard0x74b4c9fe3670>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++166: guard_no_overflow(descr=<Guard0x7fde1138b670>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#72 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-14~#74 JUMP_ABSOLUTE')
-+172: guard_not_invalidated(descr=<Guard0x74b4c9fe36a8>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
-+172: i25 = getfield_raw_i(128319926805120, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++172: guard_not_invalidated(descr=<Guard0x7fde1138b6a8>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++172: i25 = getfield_raw_i(140591852761728, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
 +179: i27 = int_lt(i25, 0)
-+183: guard_false(i27, descr=<Guard0x74b4c9fe36e0>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++183: guard_false(i27, descr=<Guard0x7fde1138b6e0>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
 +189: i28 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
 +200: i29 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeOneArgIterator.inst_stop 40 pure>)
 +204: i31 = int_ge(i29, -9223372036854775807)
-+217: guard_true(i31, descr=<Guard0x74b4c9ff8840>) [p0, p1, p2, p3, p4, p5, i23, i9, None]
++217: guard_true(i31, descr=<Guard0x7fde113a0840>) [p0, p1, p2, p3, p4, p5, i23, i9, None]
 +230: p34 = getfield_gc_r(ConstPtr(ptr33), descr=<FieldP pypy.module._random.interp_random.W_Random.inst__rnd 8>)
-+234: jump(p0, p5, p1, i23, p2, p3, i9, p4, i28, i29, p34, f19, descr=TargetToken(128319831884384))
++234: jump(p0, p5, p1, i23, p2, p3, i9, p4, i28, i29, p34, f19, descr=TargetToken(140591748465248))
 +288: --end of the loop--
-[68737f5ccf7] jit-log-opt-bridge}
-[68737ff5b35] {jit-log-opt-bridge
-# bridge out of Guard 0x74b4c9fe2d78 with 30 ops
+[2fa8de678473] jit-log-opt-bridge}
+[2fa8de70d517] {jit-log-opt-bridge
+# bridge out of Guard 0x7fde1138ad78 with 30 ops
 [p0, p1, p2, p3, p4, p5, i6, i7, i8, i9]
 +70: i11 = uint_rshift(i7, 6)
 +74: f12 = cast_int_to_float(i6)
@@ -388,30 +388,30 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#58 COMPARE_OP')
 +110: f19 = getfield_gc_f(p3, descr=<FieldF pypy.objspace.std.floatobject.W_FloatObject.inst_floatval 8 pure>)
 +123: i20 = float_le(f18, f19)
-+128: guard_false(i20, descr=<Guard0x74b4c9ff8890>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++128: guard_false(i20, descr=<Guard0x7fde113a0890>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#60 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#76 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#78 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#80 BINARY_ADD')
 +134: i22 = int_add_ovf(i8, 3)
-+141: guard_no_overflow(descr=<Guard0x74b4c9fe38d8>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++141: guard_no_overflow(descr=<Guard0x7fde1138b8d8>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#82 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6--1~#84 JUMP_ABSOLUTE')
-+147: guard_not_invalidated(descr=<Guard0x74b4c9fe3910>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
-+147: i24 = getfield_raw_i(128319926805120, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++147: guard_not_invalidated(descr=<Guard0x7fde1138b910>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++147: i24 = getfield_raw_i(140591852761728, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
 +154: i26 = int_lt(i24, 0)
-+158: guard_false(i26, descr=<Guard0x74b4c9fe3948>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++158: guard_false(i26, descr=<Guard0x7fde1138b948>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
 +164: i27 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
 +175: i28 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeOneArgIterator.inst_stop 40 pure>)
 +179: i30 = int_ge(i28, -9223372036854775807)
-+192: guard_true(i30, descr=<Guard0x74b4c9ff88e0>) [p0, p1, p2, p3, p4, p5, i22, i9, None]
++192: guard_true(i30, descr=<Guard0x7fde113a08e0>) [p0, p1, p2, p3, p4, p5, i22, i9, None]
 +205: p33 = getfield_gc_r(ConstPtr(ptr32), descr=<FieldP pypy.module._random.interp_random.W_Random.inst__rnd 8>)
-+209: jump(p0, p5, p1, i22, p2, p3, i9, p4, i27, i28, p33, f19, descr=TargetToken(128319831884384))
++209: jump(p0, p5, p1, i22, p2, p3, i9, p4, i27, i28, p33, f19, descr=TargetToken(140591748465248))
 +272: --end of the loop--
-[6873800e611] jit-log-opt-bridge}
-[687380a0a45] {jit-log-opt-bridge
-# bridge out of Guard 0x74b4c9fe3398 with 30 ops
+[2fa8de7219e9] jit-log-opt-bridge}
+[2fa8de79cf13] {jit-log-opt-bridge
+# bridge out of Guard 0x7fde1138b398 with 30 ops
 [p0, p1, p2, p3, p4, p5, i6, i7, i8, i9]
 +70: i11 = uint_rshift(i7, 6)
 +74: f12 = cast_int_to_float(i6)
@@ -423,32 +423,32 @@ debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#58 COMPARE_OP')
 +110: f19 = getfield_gc_f(p3, descr=<FieldF pypy.objspace.std.floatobject.W_FloatObject.inst_floatval 8 pure>)
 +123: i20 = float_le(f18, f19)
-+128: guard_false(i20, descr=<Guard0x74b4c9ff8930>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++128: guard_false(i20, descr=<Guard0x7fde113a0930>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-13~#60 POP_JUMP_IF_FALSE')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#76 LOAD_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#78 LOAD_CONST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#80 BINARY_ADD')
 +134: i22 = int_add_ovf(i8, 3)
-+141: guard_no_overflow(descr=<Guard0x74b4c9fe3b40>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++141: guard_no_overflow(descr=<Guard0x7fde1138bb40>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-16~#82 STORE_FAST')
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6--1~#84 JUMP_ABSOLUTE')
-+147: guard_not_invalidated(descr=<Guard0x74b4c9fe3b78>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
-+147: i24 = getfield_raw_i(128319926805120, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++147: guard_not_invalidated(descr=<Guard0x7fde1138bb78>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++147: i24 = getfield_raw_i(140591852761728, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
 +154: i26 = int_lt(i24, 0)
-+158: guard_false(i26, descr=<Guard0x74b4c9fe3bb0>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
++158: guard_false(i26, descr=<Guard0x7fde1138bbb0>) [p0, p1, p2, p3, p4, p5, f18, f19, i9, i8]
 debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/exponential.py:6-8~#12 FOR_ITER')
 +164: i27 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
 +175: i28 = getfield_gc_i(p4, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeOneArgIterator.inst_stop 40 pure>)
 +179: i30 = int_ge(i28, -9223372036854775807)
-+192: guard_true(i30, descr=<Guard0x74b4c9ff8980>) [p0, p1, p2, p3, p4, p5, i22, i9, None]
++192: guard_true(i30, descr=<Guard0x7fde113a0980>) [p0, p1, p2, p3, p4, p5, i22, i9, None]
 +205: p33 = getfield_gc_r(ConstPtr(ptr32), descr=<FieldP pypy.module._random.interp_random.W_Random.inst__rnd 8>)
-+209: jump(p0, p5, p1, i22, p2, p3, i9, p4, i27, i28, p33, f19, descr=TargetToken(128319831884384))
++209: jump(p0, p5, p1, i22, p2, p3, i9, p4, i27, i28, p33, f19, descr=TargetToken(140591748465248))
 +272: --end of the loop--
-[687380b7197] jit-log-opt-bridge}
-[68773f7f083] {jit-summary
-Tracing:      	7	0.002659
-Backend:      	7	0.000686
-TOTAL:      		0.378665
+[2fa8de7b1d93] jit-log-opt-bridge}
+[2fa91975d45d] {jit-summary
+Tracing:      	7	0.002553
+Backend:      	7	0.000646
+TOTAL:      		0.372645
 ops:             	1542
 heapcached ops:  	377
 recorded ops:    	299
@@ -474,15 +474,15 @@ Total # of loops:	1
 Total # of bridges:	6
 Freed # of loops:	0
 Freed # of bridges:	0
-[68773f84d29] jit-summary}
-[68773f8fec3] {jit-backend-counts
+[2fa9197629a3] jit-summary}
+[2fa91976a8a1] {jit-backend-counts
 entry 1:1201
-TargetToken(128319831884320):1201
-TargetToken(128319831884384):9997752
-bridge 128319831811984:427
-bridge 128319831812152:80
-bridge 128319831812320:4997522
-bridge 128319831812488:2500351
-bridge 128319831813496:15
-bridge 128319831815064:2499277
-[68773f920a5] jit-backend-counts}
+TargetToken(140591748465184):1201
+TargetToken(140591748465248):9997752
+bridge 140591748392848:427
+bridge 140591748393016:80
+bridge 140591748393184:4997522
+bridge 140591748393352:2500351
+bridge 140591748394360:15
+bridge 140591748395928:2499277
+[2fa91976c8cd] jit-backend-counts}
