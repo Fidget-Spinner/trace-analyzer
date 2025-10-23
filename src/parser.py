@@ -10,15 +10,27 @@ class Trace:
     guards: list[int]
     bridges: list["Bridge"]
 
+    # Terminator.
+    jump: int
+
     # Note: this is BACKEDGE (right before jump) count.
-    count: int = 0
+    back_count: int = -1
+
+    # This is how many times we enter this trace.
+    # It is computed from other trace's back counts.
+    computed_enter_count: int = 0
+
+    computed_jump_obj: "Trace | Bridge" = None
+
+    # Points back to the parent trace (if any).
+    _backpointer: "Trace | Bridge" = None
 
     def __repr__(self):
         res = []
         for bridge in self.bridges:
             res.append(repr(bridge))
         indented = textwrap.indent('\n'.join(res), '    ')
-        return f"Trunk<{self.id}, backedge={self.count}>\n{indented}"
+        return f"Trunk<{self.id}, backedge={self.back_count}, enter_count={self.computed_enter_count}>\n{indented}"
 
 @dataclass(slots=True)
 class Bridge:
@@ -28,16 +40,28 @@ class Bridge:
     guards: list[int]    
     bridges: list["Bridge"]
 
+    # Terminator.
+    jump: int
+
     # Note: this is end of trace count. Usually that also corresponds
     # to a backedge.
-    count: int = 0
+    back_count: int = -1
+
+    # This is how many times we enter this trace.
+    # It is computed from other trace's back counts.
+    computed_enter_count: int = 0
+
+    computed_jump_obj: "Trace | Bridge" = None
+
+    # Points back to the parent trace (if any).
+    _backpointer: "Trace | Bridge" = None
 
     def __repr__(self):
         res = []
         for bridge in self.bridges:
             res.append(repr(bridge))
         indented = textwrap.indent('\n'.join(res), '    ')
-        return f"Bridge<{self.from_guard}, backedge={self.count}>\n{indented}"
+        return f"Bridge<{self.from_guard}, backedge={self.back_count}, enter_count={self.computed_enter_count}>\n{indented}"
 
 HEX_PAT = "0x\w+"
 
@@ -45,7 +69,7 @@ LOOP_PAT = "# Loop (\d+) (.+)"
 LOOP_RE = re.compile(LOOP_PAT)
 END_LOOP_MARKER = "--end of the loop--"
 
-LABEL_PAT = f".+label\(.+ descr=TargetToken\((\d+)\)\)"
+LABEL_PAT = f".+label\(.*descr=TargetToken\((\d+)\)\)"
 LABEL_RE = re.compile(LABEL_PAT, re.IGNORECASE | re.MULTILINE)
 
 GUARD_PAT = f".+guard_.+\(.*descr=<Guard({HEX_PAT})>.*\).*"
@@ -53,6 +77,9 @@ GUARD_RE = re.compile(GUARD_PAT)
 
 BRIDGE_PAT = f"# bridge out of Guard ({HEX_PAT}) (.+)"
 BRIDGE_RE = re.compile(BRIDGE_PAT)
+
+JUMP_PAT = f".*jump\(.*descr=TargetToken\((\d+)\)\)"
+JUMP_RE = re.compile(JUMP_PAT)
 
 ENTRY_COUNT_PAT = "entry (\d+):(\d+)"
 ENTRY_COUNT_RE = re.compile(ENTRY_COUNT_PAT)
@@ -70,16 +97,29 @@ def find_bridge(all_bridges: list[Bridge], from_guard: int):
 def add_entry_count(all_entries: list[Trace], entry_id: int, count: int):
     for entry in all_entries:
         if entry.id == entry_id:
-            entry.count = count
+            entry.back_count = count
             return
     assert False, "Could not find entry trace"
 
 def add_bridge_count(all_entries: list[Bridge], guard_id: int, count: int):
     for bridge in all_entries:
         if bridge.from_guard == guard_id:
-            bridge.count = count
+            bridge.back_count = count
             return
     assert False, "Could not find bridge trace"
+
+
+def reverse_breadth_first(all_entries: list[Trace]):
+    queue = list(all_entries)
+    order = []
+    while queue:
+        nxt = queue.pop(0)
+        order.append(nxt)
+        for bridge in nxt.bridges:
+            bridge._backpointer = nxt
+            queue.append(bridge)
+    order.reverse()
+    return order
 
 def parse_and_build_trace_trees(inputfile):
     entries = []
@@ -90,13 +130,17 @@ def parse_and_build_trace_trees(inputfile):
                 match = re.match(LOOP_RE, line)
                 labels = []
                 guards = []
+                jump = None
                 while END_LOOP_MARKER not in line:
                     line = next(fp)
                     if label_match := re.match(LABEL_RE, line.strip()):
                         labels.append(int(label_match.group(1)))
                     if guard_match := re.match(GUARD_RE, line.strip()):
                         guards.append(int(guard_match.group(1), base=16))
-                entries.append(Trace(int(match.group(1)), match.group(2), labels, guards, []))
+                    if jump_match := re.match(JUMP_RE, line.strip()):
+                        jump = int(jump_match.group(1))
+                assert jump is not None, "No jump at end of loop?"
+                entries.append(Trace(int(match.group(1)), match.group(2), labels, guards, [], jump))
             elif line.startswith("# bridge out of"):
                 match = re.match(BRIDGE_RE, line)
                 labels = []
@@ -107,8 +151,10 @@ def parse_and_build_trace_trees(inputfile):
                         labels.append(int(label_match.group(1)))
                     if guard_match := re.match(GUARD_RE, line.strip()):
                         guards.append(int(guard_match.group(1), base=16))
-                entries.append(Trace(match.group(1), match.group(2), labels, guards, []))                
-                all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels, guards, []))
+                    if jump_match := re.match(JUMP_RE, line.strip()):
+                        jump = int(jump_match.group(1))
+                assert jump is not None, "No jump at end of bridge?"            
+                all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels, guards, [], jump))
             elif "jit-backend-counts" in line:
                 line = next(fp)
                 while "jit-backend-counts" not in line:
@@ -120,12 +166,23 @@ def parse_and_build_trace_trees(inputfile):
                         add_bridge_count(all_bridges, int(entry.group(1)), int(entry.group(2)))                        
                     line = next(fp)
     # print(entries, all_bridges)
-    # Finally, match labels to bridges.
+    # Match labels to bridges.
     for loop in entries + all_bridges:
         for guard in loop.guards:
             if bridge := find_bridge(all_bridges, guard):
                 loop.bridges.append(bridge)
+    # Computed entry jump counts.
+    # The algorithm is based on as simple idea: for very backwards jump occured in the trunk,
+    # then add one to entry count, as it must have entered the trunk for it to jump backwards.
+    # For every backward jump occured in a side trace, add one to entry count of the trunk, for similar reasons.
+    # As this is a trace tree, do this in bottom-up order (reverse postorder) to get the correct numbers.
     # print(all_bridges)
+    order = reverse_breadth_first(entries)
+    for node in order:
+        node.computed_enter_count += node.back_count
+        if node._backpointer:
+            node._backpointer.computed_enter_count += node.computed_enter_count
+
     for entry in entries:
         print(entry)
 
