@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 from dataclasses import dataclass, replace
 import re
 import textwrap
@@ -6,84 +9,84 @@ import textwrap
 class Trace:
     id: int
     info: str
-    labels: list["Label"]
-    guards: list[int]
-    bridges: list["Bridge"]
+    labels_and_guards: list["Label" | "Guard"]
 
     # Terminator.
     jump: int
+    jump_to: "Label | None" = None 
 
-    # Note: this is BACKEDGE (right before jump) count.
-    reported_back_count: int = -1
-    
-    # This takes into account loop peeling along with the reported back count.
-    # The problem is that a peeled loop has 2 jumps back. So to accurately report it,
-    # we must sum up the jumps.
-    computed_back_count: int = 0
 
     # This is how many times we enter this trace.
     # It is computed from other trace's back counts.
-    computed_enter_count: int = -1
+    enter_count: int = -1
 
     computed_jump_obj: "Trace | Bridge" = None
-
-    # Points back to the parent trace (if any).
-    _backpointer: "Trace | Bridge" = None
 
     is_suboptimal: bool = False
 
     def __repr__(self):
         res = []
-        for bridge in self.bridges:
-            res.append(repr(bridge))
+        for lab in self.labels_and_guards:
+            if isinstance(lab, Guard):
+                if lab.bridge is None:
+                    continue
+            res.append(repr(lab))
         indented = textwrap.indent('\n'.join(res), '    ')
-        pct_completed = self.computed_back_count / self.computed_enter_count * 100
         suboptimality_trailer = " <--- SUBOPTIMAL!" if self.is_suboptimal else ""
-        return f"Trunk<{self.id}, backedge={self.computed_back_count}, enter_count={self.computed_enter_count}, \
-pct_completed={pct_completed:.2f}%>{suboptimality_trailer}\n{indented}"
+        return f"Trunk<{self.id}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
 
 @dataclass(slots=True)
 class Bridge:
     from_guard: int 
     info: str
-    labels: list["Label"]
-    guards: list[int]    
-    bridges: list["Bridge"]
+    labels_and_guards: list["Label" | "Guard"]
 
     # Terminator.
     jump: int
+    jump_to: "Label | None" = None 
 
     # Note: this is end of trace count. Usually that also corresponds
     # to a backedge.
-    reported_back_count: int = -1
-
-    computed_back_count: int = -1
+    end_count: int = -1
 
     # This is how many times we enter this trace.
     # It is computed from other trace's back counts.
-    computed_enter_count: int = -1
+    enter_count: int = -1
 
     computed_jump_obj: "Trace | Bridge" = None
-
-    # Points back to the parent trace (if any).
-    _backpointer: "Trace | Bridge" = None
 
     is_suboptimal: bool = False
 
     def __repr__(self):
         res = []
-        for bridge in self.bridges:
-            res.append(repr(bridge))
+        for lab in self.labels_and_guards:
+            if isinstance(lab, Guard):
+                if lab.bridge is None:
+                    continue
+            res.append(repr(lab))
         indented = textwrap.indent('\n'.join(res), '    ')
-        pct_completed = self.computed_back_count / self.computed_enter_count * 100
-        suboptimality_trailer = " <--- SUBOPTIMAL!" if self.is_suboptimal else ""        
-        return f"Bridge<{self.from_guard}, backedge={self.computed_back_count}, enter_count={self.computed_enter_count} \
-pct_completed={pct_completed:.2f}%>{suboptimality_trailer}\n{indented}"
+        suboptimality_trailer = " <--- SUBOPTIMAL!" if self.is_suboptimal else ""
+        return f"Bridge<{self.from_guard}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
+
+@dataclass(slots=True)
+class Guard:
+    id: int
+    enter_count: int = 0
+    bridge: "Bridge | None" = None
+
+    def __repr__(self):
+        bridge_repr = "" if self.bridge is None else repr(self.bridge)
+        return f"Guard<{self.id}, enters={self.enter_count}, bridge={bridge_repr}>"
+
 
 @dataclass(slots=True)
 class Label:
     id: int
-    reported_enter_count: int = 0
+    enter_count: int = 0
+
+    def __repr__(self):
+        return f"Label<{self.id}, enters={self.enter_count}>"
+
 
 HEX_PAT = "0x\w+"
 
@@ -112,90 +115,104 @@ BRIDGE_COUNT_RE = re.compile(BRIDGE_COUNT_PAT)
 LABEL_COUNT_PAT = "TargetToken\((\d+)\):(\d+)"
 LABEL_COUNT_RE = re.compile(LABEL_COUNT_PAT)
 
-def find_bridge(all_bridges: list[Bridge], from_guard: int):
+def find_bridge(all_bridges: list[Bridge], from_guard: Guard):
     for bridge in all_bridges:
-        if bridge.from_guard == from_guard:
+        if bridge.from_guard == from_guard.id:
             return bridge
     return None
 
-def find_trace_via_label(all_nodes: list[Bridge | Trace], label: int):
+def find_label_obj_via_label(all_nodes: list[Bridge | Trace], label: int):
     for node in all_nodes:
-        if label in [label.id for label in node.labels]:
+        for label_obj in node.labels_and_guards:
+            if isinstance(label_obj, Label):
+                if label_obj.id == label:
+                    return label_obj
+    assert False, f"No corresponding node for label? {label}"
+
+def find_bridge_via_label(all_nodes: list[Bridge | Trace], label: int) -> Bridge:
+    visited = set()
+    worklist = list(all_nodes)
+    while worklist:
+        node = worklist.pop()
+        if id(node) in visited:
+            continue
+        visited.add(id(node))
+        if isinstance(node, Guard) and node.id == label:
             return node
-    assert False, "No corresponding node for label?"
+        if isinstance(node, Bridge) or isinstance(node, Trace):
+            for node in node.labels_and_guards:
+                worklist.append(node)
+    assert False, f"Cannot find guard with label {label}"
+
 
 def add_entry_count(all_entries: list[Trace], entry_id: int, count: int):
     for entry in all_entries:
         if entry.id == entry_id:
-            entry.reported_back_count = count
+            entry.enter_count = count
             return
     assert False, "Could not find entry trace"
 
 def add_bridge_count(all_entries: list[Bridge], guard_id: int, count: int):
     for bridge in all_entries:
         if bridge.from_guard == guard_id:
-            bridge.reported_back_count = count
+            bridge.enter_count = count
             return
     assert False, "Could not find bridge trace"
 
 def add_label_count(all_entries: list[Label], label_id: int, count: int):
     for label in all_entries:
         if label.id == label_id:
-            label.reported_enter_count = count
+            label.enter_count = count
             return
     assert False, "Could not find label"
 
 
 def compute_entry_counts(all_entries: list[Trace]):
     # Computed entry jump counts.
-    # The algorithm is based on as simple idea: for very backwards jump occured in the trunk,
-    # then add one to entry count, as it must have entered the trunk for it to jump backwards.
-    # For every backward jump occured in a side trace, add one to entry count of the trunk, for similar reasons.
-    # As this is a trace tree, do this in bottom-up order (reverse postorder) to get the correct numbers.
-
-    # Do a reverse breadth-first traversal first.
+    # The algorithm just sums up all the labels in the middle of the trace
+    # and considers them an entry.
+    # The reason is to support loop peeling and not treat a peeled loop as a
+    # separate trace (or maybe we should?)
+    
     for entry in all_entries:
-        # the last label is the backward jump of a loop.
-        # this deals with peeled iterations.
-        entry.computed_back_count += entry.labels[-1].reported_enter_count
-        # all labels pointing to this trace with a count must mean it's entering this trace.
-        for lab in entry.labels:
-            entry.computed_enter_count += lab.reported_enter_count
+        seen: set[int] = set()
+
         queue = list(entry.bridges)
-        order = []
         while queue:
             nxt = queue.pop(0)
-            if isinstance(nxt, Bridge):
-                nxt.computed_back_count = nxt.reported_back_count
-            order.append(nxt)
+            if id(nxt) in seen:
+                continue
+            seen.add(id(nxt))
             for bridge in nxt.bridges:
-                bridge._backpointer = nxt
                 queue.append(bridge)
-        order.reverse()
 
-        # Note: we don't care about peeled iterations here, as they
-        # are later summed into one anyways. Ie if you enter into the middle of
-        # another trace, we just treat it as an entry.
-        for node in order:
-            node.computed_enter_count += node.reported_back_count
-            if node._backpointer:
-                node._backpointer.computed_enter_count += node.computed_enter_count
 
-def decide_sub_optimality(all_nodes: list[Trace | Bridge]):
+def decide_sub_optimality(all_nodes: list[Trace | Bridge], working_set: list[Trace | Bridge]):
     """
     Decides if a trace is sub-optimal.
 
     The heuristic:
-    If a bridge is entered more times than its trunk trace's backedge, it's suboptimal.
+    If any bridge is entered more than 50% of the time, ie
+    (inflow - outflow) / inflow >= 0.5
     """
-    if not all_nodes:
+    if not working_set:
         return
-    for node in all_nodes:
-        node.is_suboptimal = False
-        for bridge in node.bridges:
-            if bridge.computed_enter_count > node.computed_back_count:
-                node.is_suboptimal = True
-        decide_sub_optimality(node.bridges)
+    for node in working_set:
+        if isinstance(node, Bridge) or isinstance(node, Trace):
+            node.is_suboptimal = False
+            for guard in node.labels_and_guards:
+                if isinstance(guard, Guard):
+                    # Guard has no bridge out. Great!
+                    if guard.bridge is None:
+                        continue
+
+                    bridge_entry_count = guard.bridge.enter_count
+                    corresponding_label = find_bridge_via_label(all_nodes, guard.id)
+                    label_exit_count = corresponding_label.enter_count
+
+                    if ((bridge_entry_count - label_exit_count) / bridge_entry_count) >= 0.5:
+                        node.is_suboptimal = True
+            decide_sub_optimality(all_nodes, node.labels_and_guards)
 
 
 def reorder_subtree_to_decrease_suboptimality(node: Bridge | Trace):
@@ -264,35 +281,37 @@ def parse_and_build_trace_trees(inputfile):
         for line in fp:
             if line.startswith("# Loop"):
                 match = re.match(LOOP_RE, line)
-                labels = []
-                guards = []
+                labels_and_guards = []
                 jump = None
                 while END_LOOP_MARKER not in line:
                     line = next(fp)
                     if label_match := re.match(LABEL_RE, line.strip()):
-                        labels.append(Label(int(label_match.group(1))))
+                        lab = Label(int(label_match.group(1)))
+                        all_labels.append(lab)
+                        labels_and_guards.append(lab)
                     if guard_match := re.match(GUARD_RE, line.strip()):
-                        guards.append(int(guard_match.group(1), base=16))
+                        guard = int(guard_match.group(1), base=16)
+                        labels_and_guards.append(Guard(guard))
                     if jump_match := re.match(JUMP_RE, line.strip()):
                         jump = int(jump_match.group(1))
                 assert jump is not None, f"No jump at end of loop? {line}"
-                all_labels.extend(labels)
-                entries.append(Trace(int(match.group(1)), match.group(2), labels, guards, [], jump))
+                entries.append(Trace(int(match.group(1)), match.group(2), labels_and_guards, jump))
             elif line.startswith("# bridge out of"):
                 match = re.match(BRIDGE_RE, line)
-                labels = []
-                guards = []                
+                labels_and_guards = []              
                 while END_LOOP_MARKER not in line:
                     line = next(fp)
                     if label_match := re.match(LABEL_RE, line.strip()):
-                        labels.append(Label(int(label_match.group(1))))
+                        lab = Label(int(label_match.group(1)))
+                        all_labels.append(lab)
+                        labels_and_guards.append(lab)
                     if guard_match := re.match(GUARD_RE, line.strip()):
-                        guards.append(int(guard_match.group(1), base=16))
+                        guard = int(guard_match.group(1), base=16)
+                        labels_and_guards.append(Guard(guard))
                     if jump_match := re.match(JUMP_RE, line.strip()):
                         jump = int(jump_match.group(1))
                 assert jump is not None, f"No jump at end of bridge? {line}"
-                all_labels.extend(labels)
-                all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels, guards, [], jump))
+                all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels_and_guards, jump))
             elif "jit-backend-counts" in line:
                 line = next(fp)
                 while "jit-backend-counts" not in line:
@@ -307,27 +326,31 @@ def parse_and_build_trace_trees(inputfile):
                         add_label_count(all_labels, int(entry.group(1)), int(entry.group(2)))  
                     line = next(fp)
     # Match labels to bridges.
-    for loop in entries + all_bridges:
-        for guard in loop.guards:
-            if bridge := find_bridge(all_bridges, guard):
-                loop.bridges.append(bridge)
+    # TODO recursive descent this.
+    for entry in entries:
+        for guard in entry.labels_and_guards:
+            if isinstance(guard, Guard):
+                if bridge := find_bridge(all_bridges, guard):
+                    print
+                    guard.bridge = bridge
+                
     # Match jumps to labels/traces
     for loop in entries + all_bridges:
         jump = loop.jump
-        target_trace = find_trace_via_label(entries + all_bridges, jump)
+        target_trace = find_label_obj_via_label(entries + all_bridges, jump)
         loop.computed_jump_obj = target_trace
 
-    compute_entry_counts(entries)
-    decide_sub_optimality(entries)
+    # compute_entry_counts(entries)
+    decide_sub_optimality(entries + all_bridges, entries + all_bridges)
     print("BEFORE")
     for entry in entries:
         print(entry)
-    entries = reorder_to_decrease_suboptimality(entries)
-    # compute_entry_counts(entries)
-    decide_sub_optimality(entries)
-    print("AFTER")
-    for entry in entries:
-        print(entry)
+    # entries = reorder_to_decrease_suboptimality(entries)
+    # # compute_entry_counts(entries)
+    # decide_sub_optimality(entries, entries + all_bridges)
+    # print("AFTER")
+    # for entry in entries:
+    #     print(entry)
 import sys
 parse_and_build_trace_trees(sys.argv[1])
 
