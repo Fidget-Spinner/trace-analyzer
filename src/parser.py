@@ -187,90 +187,120 @@ def compute_entry_counts(all_entries: list[Trace]):
                 queue.append(bridge)
 
 
-def decide_sub_optimality(all_nodes: list[Trace | Bridge], working_set: list[Trace | Bridge]):
+def find_previous_label(labels_or_guards, idx):
+    while idx >= 0:
+        thing = labels_or_guards[idx]
+        idx -= 1
+        if isinstance(thing, Label):
+            return thing
+    return None
+
+def decide_sub_optimality_for_single_entry(entry: list[Trace | Bridge], working_set: list[Trace | Bridge]):
     """
     Decides if a trace is sub-optimal.
 
     The heuristic:
     If any bridge is entered more than 50% of the time, ie
-    (inflow - outflow) / inflow >= 0.5
+    outflow / inflow >= 0.5
+
+    Where outflow = how many times we enter the bridge
+    inflow = how many times we enter the previous label
+
+    We use entry count of the previous label as it's the number we have to the entry count
+    *before* the bridge. Think about it: assuming no interrupts and random backedges into the trace,
+    then the entry count before the bridge is just the count of the previous label since the control-flow
+    is linear.
     """
     if not working_set:
         return
     for node in working_set:
         if isinstance(node, Bridge) or isinstance(node, Trace):
             node.is_suboptimal = False
-            for guard in node.labels_and_guards:
-                if isinstance(guard, Guard):
-                    # Guard has no bridge out. Great!
-                    if guard.bridge is None:
-                        continue
+            for idx, guard in enumerate(node.labels_and_guards):
+                if isinstance(guard, Guard) and guard.bridge is not None:
+                    print(guard)
 
                     bridge_entry_count = guard.bridge.enter_count
-                    corresponding_label = find_bridge_via_label(all_nodes, guard.id)
-                    label_exit_count = corresponding_label.enter_count
+                    previous_label = find_previous_label(node.labels_and_guards, idx-1)
+                    if previous_label is None:
+                        previous_label = entry
+                    inflow = previous_label.enter_count
 
-                    if ((bridge_entry_count - label_exit_count) / bridge_entry_count) >= 0.5:
+                    if ((bridge_entry_count) / inflow) >= 0.5:
                         node.is_suboptimal = True
-            decide_sub_optimality(all_nodes, node.labels_and_guards)
+            decide_sub_optimality_for_single_entry(entry, node.labels_and_guards)
 
 
-def reorder_subtree_to_decrease_suboptimality(node: Bridge | Trace):
+
+def reorder_subtree_to_decrease_suboptimality(all_nodes, node: Bridge | Trace | Label | Guard):
     # Trivial (base) case: this is a single node,
     # it is trivially optimal.
-    if not node.bridges:
+    if not node.labels_and_guards:
         return node
     # It's already non-suboptimal, nothing to do here.
     if not node.is_suboptimal:
         return node
+    if isinstance(node, Label):
+        return node
+    if isinstance(node, Guard):
+        return node
     
+
     node = replace(node)
     # Recurse in on the sub-traces to make them optimal first.
-    node.bridges = [reorder_subtree_to_decrease_suboptimality(bridge) for bridge in node.bridges]
-        
+    res = []
+    for guard in node.labels_and_guards:
+        if isinstance(guard, Guard) and guard.bridge is not None:
+            copy = replace(guard)
+            copy.bridge = reorder_subtree_to_decrease_suboptimality(all_nodes, guard.bridge)
+            res.append(copy)
+        else:
+            res.append(guard)
+    node.labels_and_guards = res
+
     # Greedy choice (decrease suboptimality): Now try swapping with the bridge that is most suboptimal
-    worst_bridge = max(node.bridges, key=lambda b: b.computed_enter_count - node.computed_back_count)
+    worst_guard = None
+    worst_bridge_pct = 0.0
     split = -1
-    for split, label in enumerate(node.labels):
-        if worst_bridge.from_guard == label.id:
-            break
+    worst_bridge_remainder_count = -1
+    for idx, label_or_guard in enumerate(node.labels_and_guards):
+        assert isinstance(label_or_guard, Guard) or isinstance(label_or_guard, Label)
+        if isinstance(label_or_guard, Guard) and label_or_guard.bridge is not None:
+            bridge_entry_count = label_or_guard.bridge.enter_count
+            previous_label = find_previous_label(node.labels_and_guards, idx-1)
+            inflow = previous_label.enter_count 
+            if ((bridge_entry_count) / inflow) >= worst_bridge_pct:
+                worst_guard = label_or_guard
+                split = idx
+                worst_bridge_remainder_count = inflow - bridge_entry_count
+
     assert split != -1
-    before_bridge_labels = node.labels[:split]
-    before_bridge_guards = node.guards[:split]
-    before_bridge_bridges = node.bridges[:split]
-    after_bridge_labels = node.labels[split:]
-    after_bridge_guards = node.guards[split:]
-    after_bridge_bridges = node.bridges[split+1:]
+    before_bridge_labels_and_guards = node.labels_and_guards[:split]
+    after_bridge_labels_and_guards = node.labels_and_guards[split+1:]
 
     # Create the new alternative bridge from the rest of the existing trace.
     new_bridge = Bridge(
-        worst_bridge.from_guard,
-        f"swapped of {worst_bridge.info}",
-        labels=after_bridge_labels,
-        guards=after_bridge_guards,
-        bridges=after_bridge_bridges,
+        worst_guard.id,
+        f"swapped of {worst_guard.bridge.info}",
+        labels_and_guards=after_bridge_labels_and_guards,
         jump=node.jump,
         computed_jump_obj=node.computed_jump_obj,
-        reported_back_count=node.computed_back_count
+        enter_count=worst_bridge_remainder_count,
     )
+    worst_guard = replace(worst_guard)
+    worst_guard.enter_count = 0
     # Merge worst bridge with current trace.
     better_node = replace(node)
-    better_node.labels = before_bridge_labels + worst_bridge.labels
-    better_node.guards = before_bridge_guards + worst_bridge.guards
-    better_node.bridges = before_bridge_bridges + [new_bridge] + worst_bridge.bridges
-    better_node.reported_back_count = worst_bridge.reported_back_count
-    better_node.computed_enter_count += worst_bridge.computed_enter_count
-    better_node.computed_back_count = worst_bridge.computed_back_count
-
-
+    better_node.labels_and_guards = before_bridge_labels_and_guards + [worst_guard] + worst_guard.bridge.labels_and_guards
+    worst_guard.bridge = new_bridge    
     return better_node
 
-def reorder_to_decrease_suboptimality(entries: list[Trace]):
+def reorder_to_decrease_suboptimality(all_nodes, entries: list[Trace]):
     """
     Tries to swap the offending suboptimal bridge with the main trace to see if it makes things
     more optimal.
     """
-    return [reorder_subtree_to_decrease_suboptimality(entry) for entry in entries]
+    return [reorder_subtree_to_decrease_suboptimality(all_nodes, entry) for entry in entries]
 
 
 def parse_and_build_trace_trees(inputfile):
@@ -326,14 +356,12 @@ def parse_and_build_trace_trees(inputfile):
                         add_label_count(all_labels, int(entry.group(1)), int(entry.group(2)))  
                     line = next(fp)
     # Match labels to bridges.
-    # TODO recursive descent this.
-    for entry in entries:
+    for entry in entries + all_bridges:
         for guard in entry.labels_and_guards:
             if isinstance(guard, Guard):
                 if bridge := find_bridge(all_bridges, guard):
-                    print
                     guard.bridge = bridge
-                
+
     # Match jumps to labels/traces
     for loop in entries + all_bridges:
         jump = loop.jump
@@ -341,16 +369,18 @@ def parse_and_build_trace_trees(inputfile):
         loop.computed_jump_obj = target_trace
 
     # compute_entry_counts(entries)
-    decide_sub_optimality(entries + all_bridges, entries + all_bridges)
+    for entry in entries:
+        decide_sub_optimality_for_single_entry(entry, [entry])
     print("BEFORE")
     for entry in entries:
         print(entry)
-    # entries = reorder_to_decrease_suboptimality(entries)
-    # # compute_entry_counts(entries)
-    # decide_sub_optimality(entries, entries + all_bridges)
-    # print("AFTER")
-    # for entry in entries:
-    #     print(entry)
+    entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries)
+    # compute_entry_counts(entries)
+    for entry in entries:
+        decide_sub_optimality_for_single_entry(entry, [entry])
+    print("AFTER")
+    for entry in entries:
+        print(entry)
 import sys
 parse_and_build_trace_trees(sys.argv[1])
 
