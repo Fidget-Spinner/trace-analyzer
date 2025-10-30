@@ -45,7 +45,7 @@ class Trace:
 
 @dataclass(slots=True)
 class Bridge:
-    from_guard: int 
+    id: int  # the guard ID
     info: str
     labels_and_guards: list["Label" | "Guard"]
 
@@ -66,8 +66,8 @@ class Bridge:
             res.append(repr(lab))
         res.append(repr(self.jump))
         indented = textwrap.indent('\n'.join(res), '    ')
-        suboptimality_trailer = f" <--- SUBOPTIMAL ID={self.is_suboptimal_cause.id}!" if self.is_suboptimal_cause else ""
-        return f"Bridge<{self.from_guard}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
+        suboptimality_trailer = f" [!!!!!*SUBOPTIMAL ID={self.is_suboptimal_cause.id}*!!!!!]" if self.is_suboptimal_cause else ""
+        return f"Bridge<{self.id}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
 
 @dataclass(slots=True)
 class Guard:
@@ -124,7 +124,7 @@ def find_jump_containing_trace(all_nodes: list[Bridge | Trace], jump: Jump):
 
 def find_bridge(all_bridges: list[Bridge], from_guard: Guard):
     for bridge in all_bridges:
-        if bridge.from_guard == from_guard.id:
+        if bridge.id == from_guard.id:
             return bridge
     return None
 
@@ -161,7 +161,7 @@ def add_entry_count(all_entries: list[Trace], entry_id: int, count: int):
 
 def add_bridge_count(all_entries: list[Bridge], guard_id: int, count: int):
     for bridge in all_entries:
-        if bridge.from_guard == guard_id:
+        if bridge.id == guard_id:
             bridge.enter_count = count
             return
     assert False, "Could not find bridge trace"
@@ -330,6 +330,13 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, node: Bridge | Trace | 
     worst_guard = replace(worst_guard)
     # Merge worst bridge with current trace.
     better_node = replace(node)
+
+    # swap out the jumps
+    tmp = better_node.jump
+    better_node.jump = worst_guard.bridge.node.jump
+    worst_guard.bridge.node.jump = tmp
+
+    # Merge worst bridge with current trace.
     better_node.labels_and_guards = before_bridge_labels_and_guards + [worst_guard] + worst_guard.bridge.node.labels_and_guards
     worst_guard.bridge.node = new_bridge
     # the new weight is just the incoming weights - the previous guard's weights
@@ -419,7 +426,7 @@ def parse_and_build_trace_trees(inputfile):
     # compute_entry_counts(entries)
     for entry in entries:
         decide_sub_optimality_for_single_entry(entry, [entry])
-    print("AFTER")
+    print("AFTER") 
     for entry in entries:
         print(entry)
 import sys
