@@ -40,7 +40,7 @@ class Trace:
             res.append(repr(lab))
         res.append(repr(self.jump))
         indented = textwrap.indent('\n'.join(res), '    ')
-        suboptimality_trailer = f" <--- SUBOPTIMAL ID={self.is_suboptimal_cause.id}!" if self.is_suboptimal_cause else ""
+        suboptimality_trailer = f" [!!!!!*SUBOPTIMAL ID={self.is_suboptimal_cause.id}*!!!!!]" if self.is_suboptimal_cause else ""
         return f"Trunk<{self.id}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
 
 @dataclass(slots=True)
