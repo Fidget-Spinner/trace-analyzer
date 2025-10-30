@@ -295,15 +295,15 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, node: Bridge | Trace | 
                 split = idx
                 # Computed the incoming edge's weight from the previous label
                 # Find the jump label in the labels and guards
-                previous_label, idx = find_previous_label(node.labels_and_guards, len(node.labels_and_guards) - 1)
+                previous_label, label_idx = find_previous_label(node.labels_and_guards, idx)
                 # No label found, so it's the entry count of the bridge itself
                 if previous_label is None:
                     incoming_weight = node.enter_count
-                    idx = 0
+                    label_idx = 0
                 else:
                     incoming_weight = previous_label.enter_count
                 # Finally, deduct all outgoing edges to guards
-                sn = sum_all_outgoing_bridges(node.labels_and_guards, idx)
+                sn = sum_all_outgoing_bridges(node.labels_and_guards, label_idx)
                 incoming_weight -= sn
 
     assert split != -1
