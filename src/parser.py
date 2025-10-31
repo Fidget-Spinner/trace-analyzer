@@ -7,12 +7,12 @@ import textwrap
 
 @dataclass(slots=True)
 class Edge:
-    node: "Trace | Bridge | Label"
+    node: "Trace | Bridge"
     # Trace transitions
     weight: int = 0
 
-    def __repr__(self):
-        return f"--({self.weight})-->{repr(self.node)}"
+    def __str__(self):
+        return f"--({self.weight})-->{str(self.node)}"
 
 @dataclass(slots=True)
 class Jump:
@@ -32,41 +32,32 @@ class TraceLike:
 
     is_suboptimal_cause: "Guard | None" = None
 
-@dataclass(slots=True)
-class Trace(TraceLike):
-
-    def __repr__(self):
+    def __str__(self):
         res = []
         for lab in self.labels_and_guards:
-            if isinstance(lab, Guard) and lab.bridge is None:
-                continue
-            res.append(repr(lab))
-        res.append(repr(self.jump))
+            # if isinstance(lab, Guard) and lab.bridge is None:
+            #     continue
+            res.append(str(lab))
+        res.append(str(self.jump))
         indented = textwrap.indent('\n'.join(res), '    ')
         suboptimality_trailer = f" [!!!!!*SUBOPTIMAL ID={self.is_suboptimal_cause.id}*!!!!!]" if self.is_suboptimal_cause else ""
-        return f"Trunk<{self.id}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
+        return f"{type(self).__name__}<{self.id}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
+
+@dataclass(slots=True)
+class Trace(TraceLike):
+    pass
 
 @dataclass(slots=True)
 class Bridge(TraceLike):
-
-    def __repr__(self):
-        res = []
-        for lab in self.labels_and_guards:
-            if isinstance(lab, Guard) and lab.bridge is None:
-                continue
-            res.append(repr(lab))
-        res.append(repr(self.jump))
-        indented = textwrap.indent('\n'.join(res), '    ')
-        suboptimality_trailer = f" [!!!!!*SUBOPTIMAL ID={self.is_suboptimal_cause.id}*!!!!!]" if self.is_suboptimal_cause else ""
-        return f"Bridge<{self.id}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
+    pass
 
 @dataclass(slots=True)
 class Guard:
     id: int
     bridge: "Edge | None" = None
 
-    def __repr__(self):
-        bridge_repr = "" if self.bridge is None else repr(self.bridge)
+    def __str__(self):
+        bridge_repr = "" if self.bridge is None else str(self.bridge)
         return f"Guard<{self.id}, bridge={bridge_repr}>"
 
 
@@ -75,7 +66,7 @@ class Label:
     id: int
     enter_count: int = 0
 
-    def __repr__(self):
+    def __str__(self):
         return f"Label<{self.id}, enters={self.enter_count}>"
 
 
@@ -222,7 +213,7 @@ def find_previous_label(labels_or_guards, idx):
             return thing, idx
     return None, None
 
-def decide_sub_optimality_for_single_entry(entry: list[Trace | Bridge], working_set: list[Trace | Bridge]):
+def decide_sub_optimality_for_single_entry(entry: TraceLike, node: TraceLike | None):
     """
     Decides if a trace is sub-optimal.
 
@@ -232,18 +223,20 @@ def decide_sub_optimality_for_single_entry(entry: list[Trace | Bridge], working_
 
     
     """
-    if not working_set:
+    if not node:
         return
-    for node in working_set:
-        if isinstance(node, Bridge) or isinstance(node, Trace):
-            node.is_suboptimal_cause = None
-            jump_weight = node.jump.jump_to_edge.weight
-            for guard in node.labels_and_guards:
-                if isinstance(guard, Guard) and guard.bridge is not None:
-                    if guard.bridge.weight > jump_weight:
-                        node.is_suboptimal_cause = guard
-                    decide_sub_optimality_for_single_entry(entry, [guard.bridge.node])
+    if isinstance(node, TraceLike):
+        node.is_suboptimal_cause = None
+        jump_weight = node.jump.jump_to_edge.weight
+        for guard in node.labels_and_guards:
+            if isinstance(guard, Guard) and guard.bridge is not None:
+                if guard.bridge.weight > jump_weight:
+                    node.is_suboptimal_cause = guard
+                decide_sub_optimality_for_single_entry(entry, guard.bridge.node)
 
+def decide_sub_optimality(entries: list[TraceLike]):
+    for entry in entries:
+        decide_sub_optimality_for_single_entry(entry, entry)
 
 
 def reorder_subtree_to_decrease_suboptimality(all_nodes, node: Bridge | Trace | Label | Guard):
@@ -342,58 +335,57 @@ def reorder_to_decrease_suboptimality(all_nodes, entries: list[Trace]):
     return [reorder_subtree_to_decrease_suboptimality(all_nodes, entry) for entry in entries]
 
 
-def parse_and_build_trace_trees(inputfile):
+def parse_and_build_trace_trees(fp):
     entries = []
     all_bridges = []
     all_labels = []
-    with open(inputfile) as fp:
-        for line in fp:
-            if line.startswith("# Loop"):
-                match = re.match(LOOP_RE, line)
-                labels_and_guards = []
-                jump = None
-                while END_LOOP_MARKER not in line:
-                    line = next(fp)
-                    if label_match := re.match(LABEL_RE, line.strip()):
-                        lab = Label(int(label_match.group(1)))
-                        all_labels.append(lab)
-                        labels_and_guards.append(lab)
-                    if guard_match := re.match(GUARD_RE, line.strip()):
-                        guard = int(guard_match.group(1), base=16)
-                        labels_and_guards.append(Guard(guard))
-                    if jump_match := re.match(JUMP_RE, line.strip()):
-                        jump = Jump(int(jump_match.group(1)))
-                assert jump is not None, f"No jump at end of loop? {line}"
-                entries.append(Trace(int(match.group(1)), match.group(2), labels_and_guards, jump))
-            elif line.startswith("# bridge out of"):
-                match = re.match(BRIDGE_RE, line)
-                labels_and_guards = []              
-                while END_LOOP_MARKER not in line:
-                    line = next(fp)
-                    if label_match := re.match(LABEL_RE, line.strip()):
-                        lab = Label(int(label_match.group(1)))
-                        all_labels.append(lab)
-                        labels_and_guards.append(lab)
-                    if guard_match := re.match(GUARD_RE, line.strip()):
-                        guard = int(guard_match.group(1), base=16)
-                        labels_and_guards.append(Guard(guard))
-                    if jump_match := re.match(JUMP_RE, line.strip()):
-                        jump = Jump(int(jump_match.group(1)))
-                assert jump is not None, f"No jump at end of bridge? {line}"
-                all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels_and_guards, jump))
-            elif "jit-backend-counts" in line:
+    for line in fp:
+        if line.startswith("# Loop"):
+            match = re.match(LOOP_RE, line)
+            labels_and_guards = []
+            jump = None
+            while END_LOOP_MARKER not in line:
                 line = next(fp)
-                while "jit-backend-counts" not in line:
-                    if line.startswith("entry"):
-                        entry = re.match(ENTRY_COUNT_RE, line)
-                        add_entry_count(entries, int(entry.group(1)), int(entry.group(2)))
-                    elif line.startswith("bridge"):
-                        entry = re.match(BRIDGE_COUNT_RE, line)
-                        add_bridge_count(all_bridges, int(entry.group(1)), int(entry.group(2)))   
-                    elif line.startswith("TargetToken"):
-                        entry = re.match(LABEL_COUNT_RE, line)
-                        add_label_count(all_labels, int(entry.group(1)), int(entry.group(2)))  
-                    line = next(fp)
+                if label_match := re.match(LABEL_RE, line.strip()):
+                    lab = Label(int(label_match.group(1)))
+                    all_labels.append(lab)
+                    labels_and_guards.append(lab)
+                if guard_match := re.match(GUARD_RE, line.strip()):
+                    guard = int(guard_match.group(1), base=16)
+                    labels_and_guards.append(Guard(guard))
+                if jump_match := re.match(JUMP_RE, line.strip()):
+                    jump = Jump(int(jump_match.group(1)))
+            assert jump is not None, f"No jump at end of loop? {line}"
+            entries.append(Trace(int(match.group(1)), match.group(2), labels_and_guards, jump))
+        elif line.startswith("# bridge out of"):
+            match = re.match(BRIDGE_RE, line)
+            labels_and_guards = []              
+            while END_LOOP_MARKER not in line:
+                line = next(fp)
+                if label_match := re.match(LABEL_RE, line.strip()):
+                    lab = Label(int(label_match.group(1)))
+                    all_labels.append(lab)
+                    labels_and_guards.append(lab)
+                if guard_match := re.match(GUARD_RE, line.strip()):
+                    guard = int(guard_match.group(1), base=16)
+                    labels_and_guards.append(Guard(guard))
+                if jump_match := re.match(JUMP_RE, line.strip()):
+                    jump = Jump(int(jump_match.group(1)))
+            assert jump is not None, f"No jump at end of bridge? {line}"
+            all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels_and_guards, jump))
+        elif "jit-backend-counts" in line:
+            line = next(fp)
+            while "jit-backend-counts" not in line:
+                if line.startswith("entry"):
+                    entry = re.match(ENTRY_COUNT_RE, line)
+                    add_entry_count(entries, int(entry.group(1)), int(entry.group(2)))
+                elif line.startswith("bridge"):
+                    entry = re.match(BRIDGE_COUNT_RE, line)
+                    add_bridge_count(all_bridges, int(entry.group(1)), int(entry.group(2)))   
+                elif line.startswith("TargetToken"):
+                    entry = re.match(LABEL_COUNT_RE, line)
+                    add_label_count(all_labels, int(entry.group(1)), int(entry.group(2)))  
+                line = next(fp)
     # Match labels to bridges.
     for entry in entries + all_bridges:
         for guard in entry.labels_and_guards:
@@ -407,19 +399,21 @@ def parse_and_build_trace_trees(inputfile):
         target_trace = find_label_obj_via_label(entries + all_bridges, jump.id)
         jump.jump_to_edge = Edge(target_trace)
 
+    return entries, all_bridges
+
+if __name__ == "__main__":
+    import sys
+    with open(sys.argv[1]) as fp:
+        entries, all_bridges = parse_and_build_trace_trees(fp)
     compute_edges(entries, entries + all_bridges)
-    for entry in entries:
-        decide_sub_optimality_for_single_entry(entry, [entry])
+    decide_sub_optimality(entries)
     print("BEFORE")
     for entry in entries:
         print(entry)
     entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries)
     # compute_entry_counts(entries)
-    for entry in entries:
-        decide_sub_optimality_for_single_entry(entry, [entry])
+    decide_sub_optimality(entries)
     print("AFTER") 
     for entry in entries:
-        print(entry)
-import sys
-parse_and_build_trace_trees(sys.argv[1])
+        print(entry)    
 
