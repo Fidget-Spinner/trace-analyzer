@@ -64,6 +64,21 @@ class Test(unittest.TestCase):
     def test_bad_input(self):
         """
         See src/test/bad_input.py
+
+        BEFORE
+        Trace<1, enters=202> [!!!!!*SUBOPTIMAL ID=129081921693024*!!!!!]
+            Label<129081921749408, enters=9900000>
+            Guard<129081921693024, bridge=--(9899798)-->Bridge<129081921693024, enters=9899798>
+                Jump(id=129081921749408, jump_to_edge=Edge(node=Label(id=129081921749408, enter_count=9900000), weight=9899798))>
+            Label<129081921749472, enters=98958>
+            Jump(id=129081921749472, jump_to_edge=Edge(node=Label(id=129081921749472, enter_count=98958), weight=98958))
+        AFTER
+        Trace<1, enters=202>
+            Label<129081921749408, enters=9900000>
+            Guard<129081921693024, bridge=--(202)-->Bridge<129081921693024, enters=202>
+                Label<129081921749472, enters=98958>
+                Jump(id=129081921749472, jump_to_edge=Edge(node=Label(id=129081921749472, enter_count=98958), weight=98958))>
+            Jump(id=129081921749408, jump_to_edge=Edge(node=Label(id=129081921749408, enter_count=9900000), weight=9899798))        
         """
         entries, all_bridges = self.build_from_log(PARENT_DIR / "bad_input")
         side_exit = Guard(
