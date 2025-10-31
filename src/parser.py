@@ -20,8 +20,8 @@ class Jump:
     jump_to_edge: "Edge" | None = None
 
 
-@dataclass(slots=True)
-class Trace:
+@dataclass
+class TraceLike:
     id: int
     info: str
     labels_and_guards: list["Label" | "Guard"]
@@ -31,6 +31,9 @@ class Trace:
     enter_count: int = -1
 
     is_suboptimal_cause: "Guard | None" = None
+
+@dataclass(slots=True)
+class Trace(TraceLike):
 
     def __repr__(self):
         res = []
@@ -44,19 +47,7 @@ class Trace:
         return f"Trunk<{self.id}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
 
 @dataclass(slots=True)
-class Bridge:
-    id: int  # the guard ID
-    info: str
-    labels_and_guards: list["Label" | "Guard"]
-
-    # Terminator.
-    jump: "Jump"
-
-    # This is how many times we enter this trace.
-    # It is computed from other trace's back counts.
-    enter_count: int = -1
-
-    is_suboptimal_cause: "Guard | None" = None
+class Bridge(TraceLike):
 
     def __repr__(self):
         res = []
