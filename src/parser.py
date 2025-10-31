@@ -35,8 +35,8 @@ class TraceLike:
     def __str__(self):
         res = []
         for lab in self.labels_and_guards:
-            # if isinstance(lab, Guard) and lab.bridge is None:
-            #     continue
+            if isinstance(lab, Guard) and lab.bridge is None:
+                continue
             res.append(str(lab))
         res.append(str(self.jump))
         indented = textwrap.indent('\n'.join(res), '    ')

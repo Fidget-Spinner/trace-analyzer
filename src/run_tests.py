@@ -12,7 +12,8 @@ from parser import (
     Jump,
     parse_and_build_trace_trees,
     compute_edges,
-    decide_sub_optimality
+    decide_sub_optimality,
+    reorder_to_decrease_suboptimality,
 )
 
 PARENT_DIR = pathlib.Path("./src/test")
@@ -23,7 +24,7 @@ class Test(unittest.TestCase):
             entries, all_bridges = parse_and_build_trace_trees(fp)
         compute_edges(entries, entries + all_bridges)
         decide_sub_optimality(entries)
-        return entries
+        return entries, all_bridges
 
     def assert_graph_shape_matches(self, result: list[TraceLike], expected: list[TraceLike]):
         for entry1, entry2 in zip(result, expected):
@@ -64,7 +65,7 @@ class Test(unittest.TestCase):
         """
         See src/test/bad_input.py
         """
-        entries = self.build_from_log(PARENT_DIR / "bad_input")
+        entries, all_bridges = self.build_from_log(PARENT_DIR / "bad_input")
         side_exit = Guard(
             129081921693024, bridge=Edge(
             node=Bridge(
@@ -82,16 +83,49 @@ class Test(unittest.TestCase):
                     1,
                     "entry",
                     labels_and_guards=[
+                        # Top of the loop
                         Label(129081921749408),
                         side_exit,
-                        # Peeled loop
+                        # Peeled loop 1
                         Label(129081921749472),
                     ],
-                    # To peeled loop.
+                    # To peeled loop 1
                     jump=Jump(129081921749472),
                     is_suboptimal_cause=side_exit,
                 )
             ]
         )
+        reordered_entries = reorder_to_decrease_suboptimality(entries+all_bridges, entries)
+        decide_sub_optimality(reordered_entries)
+        # swapped the bad side exit
+        new_side_exit = Guard(
+            129081921693024, bridge=Edge(
+            node=Bridge(
+                129081921693024,
+                "side exit for branch",
+                labels_and_guards=[
+                    # Peeled loop 1
+                    Label(129081921749472),
+                ],
+                # To peeled loop 1.
+                jump=Jump(129081921749472),
+            )
+        ))
+        self.assert_graph_shape_matches(
+            reordered_entries,
+            [
+                Trace(
+                    1,
+                    "entry",
+                    labels_and_guards=[
+                        Label(129081921749408),
+                        new_side_exit,
+                    ],
+                    # To top of the loop.
+                    jump=Jump(129081921749408),
+                    is_suboptimal_cause=None,
+                )
+            ]
+        )        
 if __name__ == "__main__":
     unittest.main()
