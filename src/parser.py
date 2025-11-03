@@ -311,7 +311,6 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
                 # Finally, deduct all outgoing edges to guards
                 # Stop when we hit the next label, as that might itself be a peeled loop.
                 outgoing = 0
-                last_seen_label = None
                 for i in range(label_idx, len(node.labels_and_guards)):
                     label_or_guard = node.labels_and_guards[i]
                     if isinstance(label_or_guard, Guard) and label_or_guard.bridge is not None:
@@ -319,12 +318,7 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
                     if isinstance(label_or_guard, Label):
                         last_seen_label = label_or_guard
                         break
-                
-                if last_seen_label is None:
-                    last_seen_outgoing_count = node.jump.jump_to_edge.weight
-                else:
-                    last_seen_outgoing_count = last_seen_label.enter_count
-                all_outgoing = last_seen_outgoing_count + outgoing
+                all_outgoing = outgoing
                 # Finally, compute the actual incoming weight
                 incoming_weight -= all_outgoing
 
