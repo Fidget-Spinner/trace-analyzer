@@ -197,10 +197,12 @@ def compute_edges(all_entries: list[Trace], all_nodes: list):
                     entry_count = nxt.enter_count
                     idx = 0
                 else:
+                    assert isinstance(previous_label, Label)
                     entry_count = previous_label.enter_count
                 # Finally, deduct all outgoing edges to guards
-                sn = sum_all_outgoing_bridges(nxt.labels_and_guards, idx)
+                sn = sum_all_outgoing_bridges_by_enter_count(nxt.labels_and_guards, idx)
                 entry_count -= sn
+                assert entry_count >= 0
                 nxt.jump.jump_to_edge.weight = entry_count
                 queue.append(nxt.jump.jump_to_edge.node)
             elif isinstance(nxt, Label):
@@ -210,7 +212,7 @@ def compute_edges(all_entries: list[Trace], all_nodes: list):
             else:
                 assert False, f"Unknown node type {nxt}"
 
-def sum_all_outgoing_bridges(labels_or_guards, idx):
+def sum_all_outgoing_bridges_by_enter_count(labels_or_guards, idx):
     outgoing = 0
     for i in range(idx, len(labels_or_guards)):
         label_or_guard = labels_or_guards[i]
@@ -221,9 +223,9 @@ def sum_all_outgoing_bridges(labels_or_guards, idx):
 def find_previous_label(labels_or_guards, idx):
     while idx >= 0:
         thing = labels_or_guards[idx]
-        idx -= 1
         if isinstance(thing, Label):
-            return thing, idx
+            return thing, idx        
+        idx -= 1
     return None, None
 
 def decide_sub_optimality_for_single_entry(entry: TraceLike, node: TraceLike | None):
@@ -252,18 +254,21 @@ def decide_sub_optimality(entries: list[TraceLike]):
         decide_sub_optimality_for_single_entry(entry, entry)
 
 
-def reorder_subtree_to_decrease_suboptimality(all_nodes, node: Bridge | Trace | Label | Guard):
+def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
+    # TODO: account for donewiththisframe exit counts
+
     # Trivial (base) case: this is a single node,
     # it is trivially optimal.
+    node = edge.node
     if not node.labels_and_guards:
-        return node
+        return edge
     # It's already non-suboptimal, nothing to do here.
     if not node.is_suboptimal_cause:
-        return node
+        return edge
     if isinstance(node, Label):
-        return node
+        return edge
     if isinstance(node, Guard):
-        return node
+        return edge
     
 
     node = replace(node)
@@ -272,7 +277,7 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, node: Bridge | Trace | 
     for guard in node.labels_and_guards:
         if isinstance(guard, Guard) and guard.bridge is not None:
             copy = replace(guard)
-            copy.bridge.node = reorder_subtree_to_decrease_suboptimality(all_nodes, guard.bridge.node)
+            copy.bridge = reorder_subtree_to_decrease_suboptimality(all_nodes, guard.bridge)
             res.append(copy)
         else:
             res.append(guard)
@@ -288,21 +293,42 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, node: Bridge | Trace | 
         assert isinstance(label_or_guard, Guard) or isinstance(label_or_guard, Label)
         if isinstance(label_or_guard, Guard) and label_or_guard.bridge is not None:
             if label_or_guard.bridge.weight > worst_bridge_hotness:
+                worst_bridge_hotness = label_or_guard.bridge.weight
                 worst_guard = label_or_guard
                 split = idx
-                # Computed the incoming edge's weight from the previous label
-                # Find the jump label in the labels and guards
+                # Compute the incoming edge's weight from the previous label
+                # Find the previous label in the labels and guards
                 previous_label, label_idx = find_previous_label(node.labels_and_guards, idx)
                 # No label found, so it's the entry count of the bridge itself
                 if previous_label is None:
-                    incoming_weight = node.enter_count
-                    label_idx = 0
+                    incoming_weight = edge.weight
+                    label_idx = 1
+                    sn = 0
                 else:
                     incoming_weight = previous_label.enter_count
+                    # deduct our own weight
+                    sn = -worst_bridge_hotness
                 # Finally, deduct all outgoing edges to guards
-                sn = sum_all_outgoing_bridges(node.labels_and_guards, label_idx)
-                incoming_weight -= sn
+                # Stop when we hit the next label, as that might itself be a peeled loop.
+                outgoing = 0
+                last_seen_label = None
+                for i in range(label_idx, len(node.labels_and_guards)):
+                    label_or_guard = node.labels_and_guards[i]
+                    if isinstance(label_or_guard, Guard) and label_or_guard.bridge is not None:
+                        outgoing += label_or_guard.bridge.weight
+                    if isinstance(label_or_guard, Label):
+                        last_seen_label = label_or_guard
+                        break
+                
+                if last_seen_label is None:
+                    last_seen_outgoing_count = node.jump.jump_to_edge.weight
+                else:
+                    last_seen_outgoing_count = last_seen_label.enter_count
+                all_outgoing = last_seen_outgoing_count + outgoing
+                # Finally, compute the actual incoming weight
+                incoming_weight -= all_outgoing
 
+    # print("WORST GUARD", worst_guard)
     assert split != -1
     assert incoming_weight != -1
     before_bridge_labels_and_guards = node.labels_and_guards[:split]
@@ -320,6 +346,7 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, node: Bridge | Trace | 
     if incoming_weight < 0:
         print(incoming_weight)
         print(previous_label)
+        print(label_idx)
         print(sn)
         print(worst_guard.bridge.weight)
         print(node.enter_count)
@@ -338,14 +365,14 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, node: Bridge | Trace | 
     worst_guard.bridge.node = new_bridge
     # the new weight is just the incoming weights - the previous guard's weights
     worst_guard.bridge.weight =  incoming_weight
-    return better_node
+    return Edge(better_node, weight=edge.weight)
 
 def reorder_to_decrease_suboptimality(all_nodes, entries: list[Trace]):
     """
     Tries to swap the offending suboptimal bridge with the main trace to see if it makes things
     more optimal.
     """
-    return [reorder_subtree_to_decrease_suboptimality(all_nodes, entry) for entry in entries]
+    return [reorder_subtree_to_decrease_suboptimality(all_nodes, Edge(entry, entry.enter_count)) for entry in entries]
 
 
 def parse_and_build_trace_trees(fp):
@@ -432,7 +459,7 @@ if __name__ == "__main__":
     for entry in entries:
         print(entry)
     entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries)
-    # compute_entry_counts(entries)
+    # compute_edges(entries, entries + all_bridges)
     decide_sub_optimality(entries)
     print("AFTER") 
     for entry in entries:
