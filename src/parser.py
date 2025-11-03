@@ -1,24 +1,18 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, replace, field
 import re
 import textwrap
 
 @dataclass(slots=True)
 class Edge:
-    node: "Trace | Bridge"
+    node: "Trace | Bridge | None"
     # Trace transitions
     weight: int = 0
 
     def __str__(self):
         return f"--({self.weight})-->{str(self.node)}"
-
-@dataclass(slots=True)
-class Jump:
-    id: int
-    jump_to_edge: "Edge" | None = None
-
 
 @dataclass
 class TraceLike:
@@ -70,6 +64,20 @@ class Label:
         return f"Label<{self.id}, enters={self.enter_count}>"
 
 
+@dataclass(slots=True)
+class Jump:
+    id: int
+    jump_to_edge: "Edge" | None = None
+
+
+DONE_WITH_THIS_FRAME = -0xDEAD
+
+class PlaceHolderEdge(Edge):
+    pass
+
+class DoneWithThisFrame(Jump):
+    pass
+
 HEX_PAT = "0x\w+"
 
 LOOP_PAT = "# Loop (\d+) (.+)"
@@ -88,7 +96,10 @@ BRIDGE_RE = re.compile(BRIDGE_PAT)
 JUMP_PAT = f".*jump\(.*descr=TargetToken\((\d+)\)\)"
 JUMP_RE = re.compile(JUMP_PAT)
 
-ENTRY_COUNT_PAT = "entry (\d+):(\d+)"
+FINISH_PAT = f".*finish\(.*descr=<DoneWithThisFrameDescrRef.*>\)"
+FINISH_RE = re.compile(FINISH_PAT)
+
+ENTRY_COUNT_PAT = "entry (-?\d+):(\d+)"
 ENTRY_COUNT_RE = re.compile(ENTRY_COUNT_PAT)
 
 BRIDGE_COUNT_PAT = "bridge (\d+):(\d+)"
@@ -139,7 +150,7 @@ def add_entry_count(all_entries: list[Trace], entry_id: int, count: int):
         if entry.id == entry_id:
             entry.enter_count = count
             return
-    assert False, "Could not find entry trace"
+    assert False, f"Could not find entry trace {entry_id}"
 
 def add_bridge_count(all_entries: list[Bridge], guard_id: int, count: int):
     for bridge in all_entries:
@@ -193,6 +204,8 @@ def compute_edges(all_entries: list[Trace], all_nodes: list):
                 nxt.jump.jump_to_edge.weight = entry_count
                 queue.append(nxt.jump.jump_to_edge.node)
             elif isinstance(nxt, Label):
+                pass
+            elif isinstance(nxt, type(None)):
                 pass
             else:
                 assert False, f"Unknown node type {nxt}"
@@ -355,6 +368,8 @@ def parse_and_build_trace_trees(fp):
                     labels_and_guards.append(Guard(guard))
                 if jump_match := re.match(JUMP_RE, line.strip()):
                     jump = Jump(int(jump_match.group(1)))
+                if finish_match := re.match(FINISH_RE, line.strip()):
+                    jump = DoneWithThisFrame(DONE_WITH_THIS_FRAME, PlaceHolderEdge(None, 0))
             assert jump is not None, f"No jump at end of loop? {line}"
             entries.append(Trace(int(match.group(1)), match.group(2), labels_and_guards, jump))
         elif line.startswith("# bridge out of"):
@@ -371,6 +386,8 @@ def parse_and_build_trace_trees(fp):
                     labels_and_guards.append(Guard(guard))
                 if jump_match := re.match(JUMP_RE, line.strip()):
                     jump = Jump(int(jump_match.group(1)))
+                if finish_match := re.match(FINISH_RE, line.strip()):
+                    jump = DoneWithThisFrame(DONE_WITH_THIS_FRAME, PlaceHolderEdge(None, 0))
             assert jump is not None, f"No jump at end of bridge? {line}"
             all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels_and_guards, jump))
         elif "jit-backend-counts" in line:
@@ -378,7 +395,8 @@ def parse_and_build_trace_trees(fp):
             while "jit-backend-counts" not in line:
                 if line.startswith("entry"):
                     entry = re.match(ENTRY_COUNT_RE, line)
-                    add_entry_count(entries, int(entry.group(1)), int(entry.group(2)))
+                    if int(entry.group(1)) >= 0:
+                        add_entry_count(entries, int(entry.group(1)), int(entry.group(2)))
                 elif line.startswith("bridge"):
                     entry = re.match(BRIDGE_COUNT_RE, line)
                     add_bridge_count(all_bridges, int(entry.group(1)), int(entry.group(2)))   
@@ -396,6 +414,9 @@ def parse_and_build_trace_trees(fp):
     # Match jumps to labels/traces
     for loop in entries + all_bridges:
         jump = loop.jump
+        # is a terminator
+        if jump.id == DONE_WITH_THIS_FRAME:
+            continue
         target_trace = find_label_obj_via_label(entries + all_bridges, jump.id)
         jump.jump_to_edge = Edge(target_trace)
 
