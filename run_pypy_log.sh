@@ -1,1 +1,1 @@
-PYPYLOG=jit-log-opt,jit-summary,jit-backend-counts:$1 pypy3 ./src/test/$2
+PYPYLOG=jit-log-opt,jit-summary,jit-backend-counts,jit-abort-log:$1 pypy3 $2
