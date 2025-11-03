@@ -1,5 +1,7 @@
 """
 Go board game
+
+Taken from pyperformance.
 """
 import math
 import random
