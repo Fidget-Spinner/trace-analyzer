@@ -309,9 +309,6 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
     node = edge.node
     if not node.labels_and_guards:
         return edge
-    # It's already non-suboptimal, nothing to do here.
-    if not node.is_suboptimal_cause:
-        return edge
     if isinstance(node, Label):
         return edge
     if isinstance(node, Guard):
@@ -329,6 +326,10 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
         else:
             res.append(guard)
     node.labels_and_guards = res
+
+    # It's already non-suboptimal, nothing to do here.
+    if not node.is_suboptimal_cause:
+        return edge
 
     # Greedy choice (decrease suboptimality): Now try swapping with the bridge that is most suboptimal
     # We just take the hottest bridge.
