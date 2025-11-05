@@ -49,10 +49,11 @@ class Bridge(TraceLike):
 class Guard:
     id: int
     bridge: "Edge | None" = None
+    after_count: int = 0
 
     def __str__(self):
         bridge_repr = "" if self.bridge is None else str(self.bridge)
-        return f"Guard<{self.id}, bridge={bridge_repr}>"
+        return f"Guard<{self.id}, afters={self.after_count}, bridge={bridge_repr}>"
 
 
 @dataclass(slots=True)
@@ -79,6 +80,10 @@ class PlaceHolderEdge(Edge):
 class DoneWithThisFrame(Jump):
     pass
 
+
+class PlaceHolderNode(TraceLike):
+    pass
+
 HEX_PAT = "0x\w+"
 
 LOOP_PAT = "# Loop (\d+) (.+)"
@@ -88,7 +93,7 @@ END_LOOP_MARKER = "--end of the loop--"
 LABEL_PAT = f".+label\(.*descr=TargetToken\((\d+)\)\)"
 LABEL_RE = re.compile(LABEL_PAT, re.IGNORECASE | re.MULTILINE)
 
-GUARD_PAT = f".+guard_.+\(.*descr=<Guard({HEX_PAT})>.*\).*"
+GUARD_PAT = f".*guard_.+\(.*descr=<Guard({HEX_PAT})>.*\).*"
 GUARD_RE = re.compile(GUARD_PAT)
 
 BRIDGE_PAT = f"# bridge out of Guard ({HEX_PAT}) (.+)"
@@ -112,8 +117,11 @@ LABEL_COUNT_RE = re.compile(LABEL_COUNT_PAT)
 LABEL_PRIOR_COUNT_PAT = "PriorToTargetToken\((\d+)\):(\d+)"
 LABEL_PRIOR_COUNT_RE = re.compile(LABEL_PRIOR_COUNT_PAT)
 
-JUMP_COUNT_PAT = "ExitOfToken\((\d+):(\d+)\):(\d+)"
+JUMP_COUNT_PAT = "ExitOfToken\((-?\d+):(\d+)\):(\d+)"
 JUMP_COUNT_RE = re.compile(JUMP_COUNT_PAT)
+
+AFTER_GUARD_PAT = "AfterGuardAt\((\d+)\):(\d+)"
+AFTER_GUARD_RE = re.compile(AFTER_GUARD_PAT)
 
 
 def find_jump_containing_trace(all_nodes: list[Bridge | Trace], jump: Jump):
@@ -182,11 +190,21 @@ def add_label_after_count(all_entries: list[Label], label_id: int, count: int):
     assert False, "Could not find label"
 
 def add_jump_count(all_entries: list[TraceLike], jump_id: int, count: int):
+    if jump_id < 0:
+        return
     for trace in all_entries:
         if trace.id == jump_id:
             trace.jump.enter_count = count
             return
     assert False, f"Could not find jump {jump_id}"
+
+def add_guard_after_count(all_guards: list[Guard], guard_id: int, count: int):
+    for guard in all_guards:
+        if guard.id == guard_id:
+            guard.after_count = count
+            return
+    print(all_guards)
+    assert False, f"Could not find guard {guard_id}"
 
 
 def compute_edges(all_entries: list[Trace], all_nodes: list):
@@ -317,7 +335,7 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
 
     # It's already non-suboptimal, nothing to do here.
     if not node.is_suboptimal_cause:
-        return edge
+        return Edge(node, weight=edge.weight)
 
     # Greedy choice (decrease suboptimality): Now try swapping with the bridge that is most suboptimal
     # We just take the hottest bridge.
@@ -332,55 +350,14 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
                 worst_bridge_hotness = label_or_guard.bridge.weight
                 worst_guard = label_or_guard
                 split = idx
-                # Compute the incoming edge's weight from the previous label
-                # Find the previous label in the labels and guards
-                previous_label, label_idx = find_previous_label(node.labels_and_guards, idx)
-                # No label found, so it's the entry count of the bridge itself              
-                if previous_label is None:
-                    incoming_weight = edge.weight
-                    label_idx = 0
-                else:
-                    incoming_weight = previous_label.after_count
-                    label_idx += 1
-                outgoing = 0                    
-                # Finally, deduct all outgoing edges to guards
-                # Stop when we hit the label right after that one, as that might itself be a peeled loop.
-                stopped_early = False
-                for i in range(label_idx, len(node.labels_and_guards)):
-                    lbl_or_g = node.labels_and_guards[i]
-                    if isinstance(lbl_or_g, Guard) and lbl_or_g.bridge is not None:
-                        # # Skip ourselves
-                        # if i == idx:
-                        #     continue
-                        outgoing += lbl_or_g.bridge.weight
-                    if isinstance(lbl_or_g, Label):
-                        assert lbl_or_g.before_count <= lbl_or_g.after_count
-                        outgoing += lbl_or_g.before_count
-                        stopped_early = True
-                        break
-                # Now: add backedge to the outgoing (if needed)
-                if not stopped_early:
-                    outgoing += node.jump.jump_to_edge.weight
-                # Finally, compute the actual incoming weight
-                incoming_weight -= outgoing
+                incoming_weight = label_or_guard.after_count
 
     assert split != -1
     assert incoming_weight != -1
     before_bridge_labels_and_guards = node.labels_and_guards[:split]
     after_bridge_labels_and_guards = node.labels_and_guards[split+1:]
 
-    # Sometimes the weights are slightly off due to deopt
-    # (pypy doesn't count deopts in the logs)
-    if incoming_weight < 0:
-        print(f"WARNING: weight slightly off due to deopts! {incoming_weight}")
-        incoming_weight = 0
-        # print(incoming_weight)
-        # print(outgoing)
-        # print(previous_label)
-        # print(label_idx)
-        # print(worst_guard.bridge.weight)
-        # print(node.enter_count)
-        # assert False, node
+    assert incoming_weight >= 0
 
     # Create the new alternative bridge from the rest of the existing trace.
     new_bridge = Bridge(
@@ -419,6 +396,7 @@ def parse_and_build_trace_trees(fp):
     entries = []
     all_bridges = []
     all_labels = []
+    all_guards = []
     for line in fp:
         if line.startswith("# Loop"):
             match = re.match(LOOP_RE, line)
@@ -431,14 +409,17 @@ def parse_and_build_trace_trees(fp):
                     all_labels.append(lab)
                     labels_and_guards.append(lab)
                 if guard_match := re.match(GUARD_RE, line.strip()):
-                    guard = int(guard_match.group(1), base=16)
-                    labels_and_guards.append(Guard(guard))
+                    guard = Guard(int(guard_match.group(1), base=16))
+                    labels_and_guards.append(guard)
+                    all_guards.append(guard)
                 if jump_match := re.match(JUMP_RE, line.strip()):
                     jump = Jump(int(jump_match.group(1)))
                 if finish_match := re.match(FINISH_RE, line.strip()):
-                    jump = DoneWithThisFrame(DONE_WITH_THIS_FRAME, PlaceHolderEdge(None, 0))
+                    jump = DoneWithThisFrame(match.group(1), 0, PlaceHolderEdge(None, 0))
             assert jump is not None, f"No jump at end of loop? {line}"
-            entries.append(Trace(int(match.group(1)), match.group(2), labels_and_guards, jump))
+            # Sometimes pypy gives negative IDs for fake traces.
+            if int(match.group(1)) >= 0:
+                entries.append(Trace(int(match.group(1)), match.group(2), labels_and_guards, jump))
         elif line.startswith("# bridge out of"):
             match = re.match(BRIDGE_RE, line)
             labels_and_guards = []              
@@ -449,12 +430,13 @@ def parse_and_build_trace_trees(fp):
                     all_labels.append(lab)
                     labels_and_guards.append(lab)
                 if guard_match := re.match(GUARD_RE, line.strip()):
-                    guard = int(guard_match.group(1), base=16)
-                    labels_and_guards.append(Guard(guard))
+                    guard = Guard(int(guard_match.group(1), base=16))
+                    labels_and_guards.append(guard)
+                    all_guards.append(guard)
                 if jump_match := re.match(JUMP_RE, line.strip()):
                     jump = Jump(int(jump_match.group(1)))
                 if finish_match := re.match(FINISH_RE, line.strip()):
-                    jump = DoneWithThisFrame(int(jump_match.group(1)), PlaceHolderEdge(None, 0))
+                    jump = DoneWithThisFrame(match.group(1), 0, PlaceHolderEdge(None, 0))
             assert jump is not None, f"No jump at end of bridge? {line}"          
             all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels_and_guards, jump))
         elif "jit-backend-counts" in line:
@@ -464,18 +446,22 @@ def parse_and_build_trace_trees(fp):
                     entry = re.match(ENTRY_COUNT_RE, line)
                     if int(entry.group(1)) >= 0:
                         add_entry_count(entries, int(entry.group(1)), int(entry.group(2)))
-                elif line.startswith("bridge"):
-                    entry = re.match(BRIDGE_COUNT_RE, line)
-                    add_bridge_count(all_bridges, int(entry.group(1)), int(entry.group(2)))   
-                elif line.startswith("TargetToken"):
-                    entry = re.match(LABEL_COUNT_RE, line)
-                    add_label_after_count(all_labels, int(entry.group(1)), int(entry.group(2))) 
-                elif line.startswith("PriorToTargetToken"):
-                    entry = re.match(LABEL_PRIOR_COUNT_RE, line)
-                    add_label_before_count(all_labels, int(entry.group(1)), int(entry.group(2))) 
-                elif line.startswith("ExitOfToken"):
-                    entry = re.match(JUMP_COUNT_RE, line)
-                    add_jump_count(entries + all_bridges, int(entry.group(1)), int(entry.group(3)))                      
+                if int(entry.group(1)) >= 0:
+                    if line.startswith("bridge"):
+                        entry = re.match(BRIDGE_COUNT_RE, line)
+                        add_bridge_count(all_bridges, int(entry.group(1)), int(entry.group(2)))   
+                    elif line.startswith("TargetToken"):
+                        entry = re.match(LABEL_COUNT_RE, line)
+                        add_label_after_count(all_labels, int(entry.group(1)), int(entry.group(2))) 
+                    elif line.startswith("PriorToTargetToken"):
+                        entry = re.match(LABEL_PRIOR_COUNT_RE, line)
+                        add_label_before_count(all_labels, int(entry.group(1)), int(entry.group(2))) 
+                    elif line.startswith("ExitOfToken"):
+                        entry = re.match(JUMP_COUNT_RE, line)
+                        add_jump_count(entries + all_bridges, int(entry.group(1)), int(entry.group(3)))
+                    elif line.startswith("AfterGuardAt"):
+                        entry = re.match(AFTER_GUARD_RE, line)
+                        add_guard_after_count(all_guards, int(entry.group(1)), int(entry.group(2)))
                 line = next(fp)
     # Match labels to bridges.
     for entry in entries + all_bridges:
@@ -488,8 +474,7 @@ def parse_and_build_trace_trees(fp):
     for loop in entries + all_bridges:
         jump = loop.jump
         # is a terminator
-        if jump.id == DONE_WITH_THIS_FRAME:
-            assert loop.jump.jump_to_edge is not None            
+        if isinstance(jump, DoneWithThisFrame):        
             continue
         target_trace = find_label_obj_via_label(entries + all_bridges, jump.id)
         # loop.jump = Jump(jump.id, Edge(replace(target_trace)))
