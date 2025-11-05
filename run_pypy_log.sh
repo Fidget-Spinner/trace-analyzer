@@ -1,1 +1,1 @@
-PYPYLOG=jit-log-opt,jit-summary,jit-backend-counts,jit-abort-log:$1 pypy3 $2
+PYPYLOG=jit-log-opt,jit-summary,jit-backend-counts,jit-abort-log:$1 ~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c $2

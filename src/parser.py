@@ -58,17 +58,16 @@ class Guard:
 @dataclass(slots=True)
 class Label:
     id: int
-    enter_count: int = 0
-    # enter count counts back edges. this doesn't
-    real_first_time_entry_count: int = 0
-
+    before_count: int = 0
+    after_count: int = 0
     def __str__(self):
-        return f"Label<{self.id}, enters={self.enter_count}>"
+        return f"Label<{self.id}, enters={self.before_count}, afters={self.after_count}>"
 
 
 @dataclass(slots=True)
 class Jump:
     id: int
+    enter_count: int = 0
     jump_to_edge: "Edge" | None = None
 
 
@@ -109,6 +108,13 @@ BRIDGE_COUNT_RE = re.compile(BRIDGE_COUNT_PAT)
 
 LABEL_COUNT_PAT = "TargetToken\((\d+)\):(\d+)"
 LABEL_COUNT_RE = re.compile(LABEL_COUNT_PAT)
+
+LABEL_PRIOR_COUNT_PAT = "PriorToTargetToken\((\d+)\):(\d+)"
+LABEL_PRIOR_COUNT_RE = re.compile(LABEL_PRIOR_COUNT_PAT)
+
+JUMP_COUNT_PAT = "ExitOfToken\((\d+):(\d+)\):(\d+)"
+JUMP_COUNT_RE = re.compile(JUMP_COUNT_PAT)
+
 
 def find_jump_containing_trace(all_nodes: list[Bridge | Trace], jump: Jump):
     for node in all_nodes:
@@ -159,24 +165,35 @@ def add_bridge_count(all_entries: list[Bridge], guard_id: int, count: int):
         if bridge.id == guard_id:
             bridge.enter_count = count
             return
-    assert False, "Could not find bridge trace"
+    assert False, f"Could not find bridge trace {guard_id}"
 
-def add_label_count(all_entries: list[Label], label_id: int, count: int):
+def add_label_before_count(all_entries: list[Label], label_id: int, count: int):
     for label in all_entries:
         if label.id == label_id:
-            label.enter_count = count
-            label.real_first_time_entry_count = count # to compute later
+            label.before_count = count
             return
     assert False, "Could not find label"
+
+def add_label_after_count(all_entries: list[Label], label_id: int, count: int):
+    for label in all_entries:
+        if label.id == label_id:
+            label.after_count = count
+            return
+    assert False, "Could not find label"
+
+def add_jump_count(all_entries: list[TraceLike], jump_id: int, count: int):
+    for trace in all_entries:
+        if trace.id == jump_id:
+            trace.jump.enter_count = count
+            return
+    assert False, f"Could not find jump {jump_id}"
 
 
 def compute_edges(all_entries: list[Trace], all_nodes: list):
     """
     For a guard, the edge weight is just the guard entry count. Simple!
 
-    For a back edge, It's just the last label (before) the back edge.
-    This makes sense because traces are linear control-flow, so a label that
-    leads to a backedge must have the same count.
+    Likewise for a backwards edge.
     """
     for entry in all_entries:
         seen: set[int] = set()
@@ -195,41 +212,12 @@ def compute_edges(all_entries: list[Trace], all_nodes: list):
                 # We should not be recomputing things!
                 if nxt.jump.jump_to_edge.weight != 0:
                     print("Warning: wasteful recomputation")
-                    continue                
+                    continue
+                nxt.jump.jump_to_edge.weight = nxt.jump.enter_count
                 queue.extend(nxt.labels_and_guards)
                 # Find the jump label in the labels and guards
-                previous_label, idx = find_previous_label(nxt.labels_and_guards, len(nxt.labels_and_guards) - 1)
-                # No label found, so it's the entry count of the bridge itself
-                if previous_label is None:
-                    entry_count = nxt.enter_count
-                    idx = 0
-                else:
-                    assert isinstance(previous_label, Label)
-                    entry_count = previous_label.enter_count
-                    idx += 1
-                # Finally, deduct all outgoing edges to guards
-                outgoing = 0
-                # print("ENTRY", entry_count)
-                for i in range(idx, len(nxt.labels_and_guards)):
-                    lbl_or_g = nxt.labels_and_guards[i]
-                    if isinstance(lbl_or_g, Guard) and lbl_or_g.bridge is not None:
-                        # print(lbl_or_g.bridge.node.enter_count)                        
-                        outgoing += lbl_or_g.bridge.node.enter_count
-                    # Should have no label
-                    assert not isinstance(lbl_or_g, Label)
-                entry_count -= outgoing
-                assert entry_count >= 0
-                nxt.jump.jump_to_edge.weight = entry_count
-                # print(nxt.jump.jump_to_edge)
                 # deduct the backedge weight to eventually find the initial entry for that label.
                 if isinstance(nxt.jump.jump_to_edge.node, Label):
-                    nxt.jump.jump_to_edge.node.real_first_time_entry_count -= entry_count
-                    # if it drops below 0, this indicates that there was a deopt that was not recorded by pypy.
-                    # TODO: Fix me later by instrumenting pypy
-                    # For now, this is fine as it accounts for fewer than 0.1% of all execution counts.
-                    if nxt.jump.jump_to_edge.node.real_first_time_entry_count < 0:
-                        print(f"WARNING: entry count is {nxt.jump.jump_to_edge.node.real_first_time_entry_count}")
-                        nxt.jump.jump_to_edge.node.real_first_time_entry_count = 0
                     queue.append(nxt.jump.jump_to_edge.node)
             elif isinstance(nxt, Label):
                 pass
@@ -352,7 +340,7 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
                     incoming_weight = edge.weight
                     label_idx = 0
                 else:
-                    incoming_weight = previous_label.enter_count
+                    incoming_weight = previous_label.after_count
                     label_idx += 1
                 outgoing = 0                    
                 # Finally, deduct all outgoing edges to guards
@@ -366,13 +354,13 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
                         #     continue
                         outgoing += lbl_or_g.bridge.weight
                     if isinstance(lbl_or_g, Label):
-                        assert lbl_or_g.real_first_time_entry_count <= lbl_or_g.enter_count
-                        outgoing += lbl_or_g.real_first_time_entry_count
+                        assert lbl_or_g.before_count <= lbl_or_g.after_count
+                        outgoing += lbl_or_g.before_count
                         stopped_early = True
                         break
                 # Now: add backedge to the outgoing (if needed)
-                # if not stopped_early:
-                #     outgoing += node.jump.jump_to_edge.weight
+                if not stopped_early:
+                    outgoing += node.jump.jump_to_edge.weight
                 # Finally, compute the actual incoming weight
                 incoming_weight -= outgoing
 
@@ -466,8 +454,8 @@ def parse_and_build_trace_trees(fp):
                 if jump_match := re.match(JUMP_RE, line.strip()):
                     jump = Jump(int(jump_match.group(1)))
                 if finish_match := re.match(FINISH_RE, line.strip()):
-                    jump = DoneWithThisFrame(DONE_WITH_THIS_FRAME, PlaceHolderEdge(None, 0))
-            assert jump is not None, f"No jump at end of bridge? {line}"
+                    jump = DoneWithThisFrame(int(jump_match.group(1)), PlaceHolderEdge(None, 0))
+            assert jump is not None, f"No jump at end of bridge? {line}"          
             all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels_and_guards, jump))
         elif "jit-backend-counts" in line:
             line = next(fp)
@@ -481,7 +469,13 @@ def parse_and_build_trace_trees(fp):
                     add_bridge_count(all_bridges, int(entry.group(1)), int(entry.group(2)))   
                 elif line.startswith("TargetToken"):
                     entry = re.match(LABEL_COUNT_RE, line)
-                    add_label_count(all_labels, int(entry.group(1)), int(entry.group(2)))  
+                    add_label_after_count(all_labels, int(entry.group(1)), int(entry.group(2))) 
+                elif line.startswith("PriorToTargetToken"):
+                    entry = re.match(LABEL_PRIOR_COUNT_RE, line)
+                    add_label_before_count(all_labels, int(entry.group(1)), int(entry.group(2))) 
+                elif line.startswith("ExitOfToken"):
+                    entry = re.match(JUMP_COUNT_RE, line)
+                    add_jump_count(entries + all_bridges, int(entry.group(1)), int(entry.group(3)))                      
                 line = next(fp)
     # Match labels to bridges.
     for entry in entries + all_bridges:
