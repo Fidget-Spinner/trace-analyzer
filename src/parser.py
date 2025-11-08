@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 
-from dataclasses import dataclass, replace, field
+from dataclasses import dataclass, replace, field, asdict
 import re
 import textwrap
+import json
 
 @dataclass(slots=True)
 class Edge:
@@ -483,6 +484,15 @@ def parse_and_build_trace_trees(fp):
 
     return entries, all_bridges
 
+
+def dump_entry(entry: TraceLike, file):
+    json.dump(asdict(entry), file)
+
+def dump_entries(entries: list[TraceLike], file) -> None:
+    for entry in entries:
+        dump_entry(entry, file=file)
+
+
 if __name__ == "__main__":
     import sys
     with open(sys.argv[1]) as fp:
@@ -498,5 +508,5 @@ if __name__ == "__main__":
     decide_sub_optimality(entries)
     with open(sys.argv[3], "w") as fp:
         for entry in entries:
-            print(entry, file=fp)   
+            print(entry, file=fp)
 
