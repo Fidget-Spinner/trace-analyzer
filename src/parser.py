@@ -46,15 +46,31 @@ class Trace(TraceLike):
 class Bridge(TraceLike):
     pass
 
+GUARD_OP_INVERTED = {
+    "guard_true": "guard_false",
+    "guard_false": "guard_true",
+    "guard_nonnull": "guard_isnull",
+    "guard_isnull": "guard_nonnull",
+}
+
 @dataclass(slots=True)
 class Guard:
     id: int
+    op: str
     bridge: "Edge | None" = None
     after_count: int = 0
 
     def __str__(self):
         bridge_repr = "" if self.bridge is None else str(self.bridge)
-        return f"Guard<{self.id}, afters={self.after_count}, bridge={bridge_repr}>"
+        return f"Guard<{self.id}, op={self.op}, afters={self.after_count}, bridge={bridge_repr}>"
+
+    def invert_guard(self, warn=True):
+        if self.op not in GUARD_OP_INVERTED:
+            if warn:
+                print(f"WARNING: GUARD NOT INVERTABLE {self.op}")
+            return None
+        return GUARD_OP_INVERTED[self.op]
+
 
 
 @dataclass(slots=True)
@@ -94,7 +110,7 @@ END_LOOP_MARKER = "--end of the loop--"
 LABEL_PAT = f".+label\(.*descr=TargetToken\((\d+)\)\)"
 LABEL_RE = re.compile(LABEL_PAT, re.IGNORECASE | re.MULTILINE)
 
-GUARD_PAT = f".*guard_.+\(.*descr=<Guard({HEX_PAT})>.*\).*"
+GUARD_PAT = f".*(guard_.+)\(.*descr=<Guard({HEX_PAT})>.*\).*"
 GUARD_RE = re.compile(GUARD_PAT)
 
 BRIDGE_PAT = f"# bridge out of Guard ({HEX_PAT}) (.+)"
@@ -347,13 +363,15 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
     for idx, label_or_guard in enumerate(node.labels_and_guards):
         assert isinstance(label_or_guard, Guard) or isinstance(label_or_guard, Label)
         if isinstance(label_or_guard, Guard) and label_or_guard.bridge is not None:
-            if label_or_guard.bridge.weight > worst_bridge_hotness:
+            if label_or_guard.bridge.weight > worst_bridge_hotness and label_or_guard.invert_guard(warn=False) is not None:
                 worst_bridge_hotness = label_or_guard.bridge.weight
                 worst_guard = label_or_guard
                 split = idx
                 incoming_weight = label_or_guard.after_count
 
-    assert split != -1
+    # cannot find an invertable guard. bail.
+    if split == -1:
+        return Edge(node, weight=edge.weight)
     assert incoming_weight != -1
     before_bridge_labels_and_guards = node.labels_and_guards[:split]
     after_bridge_labels_and_guards = node.labels_and_guards[split+1:]
@@ -377,6 +395,10 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge):
     tmp = better_node.jump
     better_node.jump = replace(worst_guard.bridge.node.jump)
     worst_guard.bridge.node.jump = replace(tmp)
+
+    # invert the guard op
+    worst_guard.op = worst_guard.invert_guard()
+    assert worst_guard.op is not None
 
     # Merge worst bridge with current trace.
     better_node.labels_and_guards = before_bridge_labels_and_guards + [worst_guard] + worst_guard.bridge.node.labels_and_guards
@@ -410,7 +432,7 @@ def parse_and_build_trace_trees(fp):
                     all_labels.append(lab)
                     labels_and_guards.append(lab)
                 if guard_match := re.match(GUARD_RE, line.strip()):
-                    guard = Guard(int(guard_match.group(1), base=16))
+                    guard = Guard(int(guard_match.group(2), base=16), guard_match.group(1))
                     labels_and_guards.append(guard)
                     all_guards.append(guard)
                 if jump_match := re.match(JUMP_RE, line.strip()):
@@ -431,7 +453,7 @@ def parse_and_build_trace_trees(fp):
                     all_labels.append(lab)
                     labels_and_guards.append(lab)
                 if guard_match := re.match(GUARD_RE, line.strip()):
-                    guard = Guard(int(guard_match.group(1), base=16))
+                    guard = Guard(int(guard_match.group(2), base=16), guard_match.group(1))
                     labels_and_guards.append(guard)
                     all_guards.append(guard)
                 if jump_match := re.match(JUMP_RE, line.strip()):
@@ -510,3 +532,5 @@ if __name__ == "__main__":
         for entry in entries:
             print(entry, file=fp)
 
+    with open(sys.argv[4], "w") as fp:
+        dump_entries(entries, fp)
