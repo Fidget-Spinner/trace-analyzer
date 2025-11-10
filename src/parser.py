@@ -4,7 +4,6 @@ from __future__ import annotations
 from dataclasses import dataclass, replace, field, asdict
 import re
 import textwrap
-import json
 
 @dataclass(slots=True)
 class Edge:
@@ -37,6 +36,18 @@ class TraceLike:
         indented = textwrap.indent('\n'.join(res), '    ')
         suboptimality_trailer = f" [!!!!!*SUBOPTIMAL ID={self.is_suboptimal_cause.id}*!!!!!]" if self.is_suboptimal_cause else ""
         return f"{type(self).__name__}<{self.id}, enters={self.enter_count}>{suboptimality_trailer}\n{indented}"
+
+    def serialize(self) -> str:
+        res = []
+        for lab_or_guard in self.labels_and_guards:
+            if isinstance(lab_or_guard, Guard):
+                res.append(lab_or_guard.serialize())
+            # We ignore labels, as those have a different address every run anwways.
+        # Terminators need not be appended, as that is up to the pypy tracer to decide.
+        # We're just responsible for the "shape" of the tree from guards.
+        indented = textwrap.indent('\n'.join(res), '    ')
+        return f"Trace<{self.id}> {{\n{indented}\n}}\n"
+        
 
 @dataclass(slots=True)
 class Trace(TraceLike):
@@ -71,6 +82,10 @@ class Guard:
             return None
         return GUARD_OP_INVERTED[self.op]
 
+    def serialize(self):
+        if self.bridge is not None:
+            return f"Guard<{self.op}> {{\n{textwrap.indent(self.bridge.node.serialize(), '    ')}\n}}"
+        return f"Guard<{self.op}>"
 
 
 @dataclass(slots=True)
@@ -78,9 +93,9 @@ class Label:
     id: int
     before_count: int = 0
     after_count: int = 0
+
     def __str__(self):
         return f"Label<{self.id}, enters={self.before_count}, afters={self.after_count}>"
-
 
 @dataclass(slots=True)
 class Jump:
@@ -554,8 +569,8 @@ def parse_and_build_trace_trees(fp):
 def dump_entries(entries: list[TraceLike], file) -> None:
     new_list = []
     for entry in entries:
-        new_list.append(asdict(entry))
-    json.dump(new_list, file)
+        new_list.append(entry.serialize())
+    file.write("\n".join(new_list))
 
 
 if __name__ == "__main__":
