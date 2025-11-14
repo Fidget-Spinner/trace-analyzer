@@ -45,8 +45,7 @@ class TraceLike:
             # We ignore labels, as those have a different address every run anwways.
         # Terminators need not be appended, as that is up to the pypy tracer to decide.
         # We're just responsible for the "shape" of the tree from guards.
-        indented = textwrap.indent('\n'.join(res), '    ')
-        return f"Trace<{self.id}> {{\n{indented}\n}}\n"
+        return {f"Trace:{self.id}" : res}
         
 
 @dataclass(slots=True)
@@ -84,8 +83,8 @@ class Guard:
 
     def serialize(self):
         if self.bridge is not None:
-            return f"Guard<{self.op}> {{\n{textwrap.indent(self.bridge.node.serialize(), '    ')}\n}}"
-        return f"Guard<{self.op}>"
+            return {f"Guard:{self.op}": self.bridge.node.serialize()}
+        return {f"Guard:{self.op}": None}
 
 
 @dataclass(slots=True)
@@ -567,10 +566,11 @@ def parse_and_build_trace_trees(fp):
 
 
 def dump_entries(entries: list[TraceLike], file) -> None:
+    import json
     new_list = []
     for entry in entries:
         new_list.append(entry.serialize())
-    file.write("\n".join(new_list))
+    json.dump(new_list, file, separators=(',', ':'))
 
 
 if __name__ == "__main__":
