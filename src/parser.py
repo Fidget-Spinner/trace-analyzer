@@ -68,6 +68,7 @@ class Guard:
     id: int
     op: str
     bridge: "Edge | None" = None
+    inverted: bool = False
     after_count: int = 0
 
     def __str__(self):
@@ -82,8 +83,9 @@ class Guard:
         return GUARD_OP_INVERTED[self.op]
 
     def serialize(self):
+        inverted = "I" if self.inverted else ""
         if self.bridge is not None:
-            return {f"Guard:{self.op}": self.bridge.node.serialize()}
+            return {f"Guard{inverted}:{self.op}": self.bridge.node.serialize()}
         return {f"Guard:{self.op}": None}
 
 
@@ -443,6 +445,7 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
     )
     
     worst_guard = replace(worst_guard)
+    worst_guard.inverted = True
     # Merge worst bridge with current trace.
     better_node = replace(node)
 
