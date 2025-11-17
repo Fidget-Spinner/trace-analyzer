@@ -10,4 +10,11 @@ def foo(x, loops):
             x = x + 2
     return x
 
-print(foo(1, loops=1000000000))
+
+foo(1, loops=1000000000)
+
+import time
+start = time.time()
+foo(1, loops=1000000000)
+end = time.time()
+print(f"{end - start}")

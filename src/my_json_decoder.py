@@ -11,15 +11,15 @@ class Decoder:
     def parse_array(self):
         assert self.s[self.pos] == '['
         self.pos += 1
-        res = []
+        result = []
         while self.s[self.pos] != ']':
-            res.append(self.parse_any())
+            result.append(self.parse_any())
             if self.s[self.pos] != ']':
                 assert self.s[self.pos] == ','
                 self.pos += 1
         assert self.s[self.pos] == ']'
         self.pos += 1
-        return res
+        return {"arr": result}
 
     def parse_obj(self):
         assert self.s[self.pos] == '{'
@@ -30,7 +30,7 @@ class Decoder:
         value = self.parse_any()
         assert self.s[self.pos] == '}'
         self.pos += 1
-        return {key : value}
+        return {"obj": {key : value}}
 
     def parse_str(self):
         assert self.s[self.pos] == '"'
@@ -42,13 +42,12 @@ class Decoder:
         self.pos = curr
         assert self.s[self.pos] == '"'
         self.pos += 1
-        return res
+        return {"none": res}
 
     def parse_null(self):
         assert self.s[self.pos] == 'n'
-        res = self.s[self.pos:self.pos + len("null")]
         self.pos += len("null")
-        return res
+        return {"none": None}
 
     def parse_any(self):        
         nxt = self.s[self.pos]
@@ -61,7 +60,7 @@ class Decoder:
         elif nxt == 'n':
             return self.parse_null()
         print("Unrecognized token %d %s" % (self.pos, nxt))
-        assert False
+        return {"none": None}
     
 
 
