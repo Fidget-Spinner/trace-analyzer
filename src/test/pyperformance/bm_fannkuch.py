@@ -7,7 +7,6 @@ Contributed by Sokolov Yura, modified by Tupteq.
 
 # import pyperf
 
-
 DEFAULT_ARG = 9
 
 

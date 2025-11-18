@@ -1,7 +1,9 @@
 import pypyjit
+import sys
 # pypyjit.set_param(shapefile="./src/test/bad_benchmark_2_guided_gold")
-pypyjit.set_param(shapefile="empty")
-
+# pypyjit.set_param(shapefile="empty")
+pypyjit.set_param(shapefile=sys.argv[1])
+# pypyjit.set_param(shapefile="./src/test/bad_benchmark_2_guided_2_serialized")
 def foo(x, loops):
     x = 0
     y = 0

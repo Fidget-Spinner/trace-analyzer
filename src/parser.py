@@ -70,6 +70,7 @@ class Guard:
     op: str
     bridge: "Edge | None" = None
     inverted: bool = False
+    expected_to_be_inverted: bool = False
     after_count: int = 0
 
     def __str__(self):
@@ -84,9 +85,11 @@ class Guard:
         return GUARD_OP_INVERTED[self.op]
 
     def serialize(self):
-        inverted = "I" if self.inverted else ""
+        post = "I" if self.inverted else ""
+        if self.expected_to_be_inverted:
+            post = "P"
         if self.bridge is not None:
-            return {f"Guard{inverted}:{self.op}": self.bridge.node.serialize()}
+            return {f"Guard{post}:{self.op}": self.bridge.node.serialize()}
         return {f"Guard:{self.op}": None}
 
 
@@ -156,6 +159,9 @@ JUMP_COUNT_RE = re.compile(JUMP_COUNT_PAT)
 
 AFTER_GUARD_PAT = "AfterGuardAt\((\d+)\):(\d+)"
 AFTER_GUARD_RE = re.compile(AFTER_GUARD_PAT)
+
+AFTER_EXPECTED_INVERTED_GUARD_PAT = "AfterExpectedInvertedGuardAt\((\d+)\):(\d+)"
+AFTER_EXPECTED_INVERTED_GUARD_RE = re.compile(AFTER_EXPECTED_INVERTED_GUARD_PAT)
 
 
 def find_jump_containing_trace(all_nodes: list[Bridge | Trace], jump: Jump):
@@ -232,10 +238,11 @@ def add_jump_count(all_entries: list[TraceLike], jump_id: int, count: int):
             return
     assert False, f"Could not find jump {jump_id}"
 
-def add_guard_after_count(all_guards: list[Guard], guard_id: int, count: int):
+def add_guard_after_count(all_guards: list[Guard], guard_id: int, count: int, expected_inversion: bool = False):
     for guard in all_guards:
         if guard.id == guard_id:
             guard.after_count = count
+            guard.expected_to_be_inverted = expected_inversion
             return
     print(all_guards)
     assert False, f"Could not find guard {guard_id}"
@@ -551,6 +558,9 @@ def parse_and_build_trace_trees(fp):
                     elif line.startswith("AfterGuardAt"):
                         entry = re.match(AFTER_GUARD_RE, line)
                         add_guard_after_count(all_guards, int(entry.group(1)), int(entry.group(2)))
+                    elif line.startswith("AfterExpectedInvertedGuardAt"):
+                        entry = re.match(AFTER_EXPECTED_INVERTED_GUARD_RE, line)
+                        add_guard_after_count(all_guards, int(entry.group(1)), int(entry.group(2)), expected_inversion=True)                        
                 line = next(fp)
     # Match labels to bridges.
     for entry in entries + all_bridges:
@@ -595,7 +605,7 @@ if __name__ == "__main__":
             print(entry, file=fp)
     # Run to fixpoint.
     prev_count = float('+inf')
-    while prev_count >= count_suboptimality(entries):
+    for _ in range(20):
         prev_count = count_suboptimality(entries)
         entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries, requires_invertible_guard=True)
         decide_sub_optimality(entries)

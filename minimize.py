@@ -30,6 +30,7 @@ def minimize():
                     print("STABILIZED")
                     break
         shapefile = write_to_serialized
+    print(suboptimal_counts)
     most_suboptimal = max(suboptimal_counts)
     least_suboptimal = min(suboptimal_counts)
     print(f"Worst: {most_suboptimal}, {suboptimal_counts.index(most_suboptimal)}th")

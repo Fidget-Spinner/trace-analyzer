@@ -1,5 +1,6 @@
 import pypyjit
-pypyjit.set_param(shapefile="./src/test/bad_benchmark_guided_serialized")
+import sys
+pypyjit.set_param(shapefile=sys.argv[1])
 # pypyjit.set_param(shapefile="empty")
 def foo(x, loops):
     x = 0
@@ -11,10 +12,10 @@ def foo(x, loops):
     return x
 
 
-foo(1, loops=2000000000)
+foo(1, loops=200000000)
 
 import time
 start = time.time()
-foo(1, loops=2000000000)
+foo(1, loops=200000000)
 end = time.time()
 print(f"{end - start}")
