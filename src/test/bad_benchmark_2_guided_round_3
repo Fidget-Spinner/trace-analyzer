@@ -1,0 +1,372 @@
+[4b084d0919b] {jit-log-opt-loop
+# Loop 3 (foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#16 FOR_ITER) : loop with 131 ops
+[p0, p1]
++328: i2 = getfield_gc_i(p0, descr=<FieldS pypy.interpreter.pyframe.PyFrame.inst_last_instr 40>)
++339: p3 = getfield_gc_r(p0, descr=<FieldP pypy.interpreter.pyframe.PyFrame.inst_pycode 64>)
++343: i4 = getfield_gc_i(p0, descr=<FieldS pypy.interpreter.pyframe.PyFrame.inst_valuestackdepth 72>)
++347: p5 = getfield_gc_r(p0, descr=<FieldP pypy.interpreter.pyframe.PyFrame.inst_debugdata 16>)
++351: p6 = getfield_gc_r(p0, descr=<FieldP pypy.interpreter.pyframe.PyFrame.inst_lastblock 48>)
++355: p7 = getfield_gc_r(p0, descr=<FieldP pypy.interpreter.pyframe.PyFrame.inst_locals_cells_stack_w 56>)
++359: p9 = getarrayitem_gc_r(p7, 0, descr=<ArrayP 8>)
++363: p11 = getarrayitem_gc_r(p7, 1, descr=<ArrayP 8>)
++367: p13 = getarrayitem_gc_r(p7, 2, descr=<ArrayP 8>)
++371: p15 = getarrayitem_gc_r(p7, 3, descr=<ArrayP 8>)
++375: p17 = getarrayitem_gc_r(p7, 4, descr=<ArrayP 8>)
++379: p19 = getarrayitem_gc_r(p7, 5, descr=<ArrayP 8>)
++383: p21 = getarrayitem_gc_r(p7, 6, descr=<ArrayP 8>)
++394: label(p0, p1, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, descr=TargetToken(128926202012896))
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#16 FOR_ITER')
++461: guard_value(i4, 5, descr=<Guard0x7541f8798020>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
++478: guard_isnull(p5, descr=<Guard0x7541f8768950>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
++494: guard_class(p17, 128926264329608, descr=<Guard0x7541f8768988>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
++514: i24 = getfield_gc_i(p17, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
++518: i25 = getfield_gc_i(p17, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeOneArgIterator.inst_stop 40 pure>)
++522: i26 = int_lt(i24, i25)
++525: guard_true(i26, descr=<Guard0x7541f87689c0>) [p0, i2, p3, i4, p5, p6, p9, p11, p13, p15, p17, p19, p21, p1]
++538: i28 = int_add(i24, 1)
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#18 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#20 LOAD_FAST')
++542: setfield_gc(p17, i28, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
++546: guard_nonnull_class(p13, ConstClass(W_IntObject), descr=<Guard0x7541f8798070>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#22 LOAD_CONST')
++586: guard_value(p3, ConstPtr(ptr30), descr=<Guard0x7541f87689f8>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#24 BINARY_MODULO')
++599: i31 = getfield_gc_i(p13, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++604: i33 = int_eq(i31, -9223372036854775808)
++604: i35 = int_rshift(i31, 63)
++611: i36 = int_xor(i31, i35)
++617: i38 = uint_mul_high(i36, -3689348814741910323)
++630: i40 = uint_rshift(i38, 3)
++634: i41 = int_xor(i40, i35)
++637: i43 = int_mul(i41, 10)
++641: i44 = int_sub(i31, i43)
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#26 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#28 COMPARE_OP')
++647: i45 = int_is_zero(i44)
++650: guard_false(i45, descr=<Guard0x7541f8768a30>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#30 POP_JUMP_IF_FALSE')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#42 LOAD_FAST')
++660: guard_nonnull_class(p9, ConstClass(W_IntObject), descr=<Guard0x7541f87980c0>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#44 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#46 BINARY_ADD')
++692: i47 = getfield_gc_i(p9, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++696: i49 = int_add_ovf(i47, 4)
++700: guard_no_overflow(descr=<Guard0x7541f8768a68>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#48 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#50 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#52 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#54 COMPARE_OP')
++710: i51 = int_lt(i31, 100000)
++717: guard_true(i51, descr=<Guard0x7541f8768aa0>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#56 POP_JUMP_IF_FALSE')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#58 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#60 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#62 BINARY_ADD')
++727: i53 = int_add_ovf(i49, 3)
++731: guard_no_overflow(descr=<Guard0x7541f8768ad8>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#64 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#66 JUMP_FORWARD')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#76 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#78 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#80 BINARY_ADD')
++744: i55 = int_add(i31, 1)
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#82 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#84 JUMP_ABSOLUTE')
++748: guard_not_invalidated(descr=<Guard0x7541f8768b10>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
++755: i57 = getfield_raw_i(128926280886976, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++768: i59 = int_lt(i57, 0)
++772: guard_false(i59, descr=<Guard0x7541f8768b48>) [p0, p3, p6, p9, p11, p13, p17, p21, p1, i24]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#16 FOR_ITER')
++791: i60 = same_as_i(i28)
++798: label(p0, p1, p6, i53, p11, i55, i24, p17, i60, i25, descr=TargetToken(128926202012960))
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#16 FOR_ITER')
++829: i61 = int_lt(i60, i25)
++832: guard_true(i61, descr=<Guard0x7541f8798110>) [p0, p6, p11, p17, p1, i60, i25, i24, i55, i53]
++842: i63 = int_add(i60, 1)
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#18 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#20 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#22 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#24 BINARY_MODULO')
++847: i65 = int_eq(i55, -9223372036854775808)
++847: i67 = int_rshift(i55, 63)
++854: i68 = int_xor(i55, i67)
++860: i70 = uint_mul_high(i68, -3689348814741910323)
++873: i72 = uint_rshift(i70, 3)
++877: i73 = int_xor(i72, i67)
++880: i75 = int_mul(i73, 10)
++884: i76 = int_sub(i55, i75)
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#26 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#28 COMPARE_OP')
++890: setfield_gc(p17, i63, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
++894: i77 = int_is_zero(i76)
++897: guard_false(i77, descr=<Guard0x7541f8798160>) [p0, p6, p11, p17, p1, i76, i60, None, i55, i53]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#30 POP_JUMP_IF_FALSE')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#42 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#44 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#46 BINARY_ADD')
++907: i80 = int_add_ovf(i53, 4)
++914: guard_no_overflow(descr=<Guard0x7541f8768b80>) [p0, p6, p11, p17, p1, i76, i60, None, i55, i53]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#48 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#50 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#52 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#54 COMPARE_OP')
++927: i82 = int_lt(i55, 100000)
++934: guard_true(i82, descr=<Guard0x7541f8768bb8>) [p0, p6, p11, p17, p1, i76, i60, None, i55, i53]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#56 POP_JUMP_IF_FALSE')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#58 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#60 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#62 BINARY_ADD')
++947: i84 = int_add_ovf(i80, 3)
++951: guard_no_overflow(descr=<Guard0x7541f8768bf0>) [p0, p6, p11, p17, p1, i76, i60, None, i55, i53]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#64 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-14~#66 JUMP_FORWARD')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#76 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#78 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#80 BINARY_ADD')
++964: i86 = int_add(i55, 1)
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#82 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#84 JUMP_ABSOLUTE')
++968: guard_not_invalidated(descr=<Guard0x7541f8768c28>) [p0, p6, p11, p17, p1, i76, i60, None, i55, i53]
++975: i88 = getfield_raw_i(128926280886976, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++988: i90 = int_lt(i88, 0)
++992: guard_false(i90, descr=<Guard0x7541f8768c60>) [p0, p6, p11, p17, p1, i76, i60, None, i55, i53]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#16 FOR_ITER')
++1015: jump(p0, p1, p6, i84, p11, i86, i60, p17, i63, i25, descr=TargetToken(128926202012960))
++1040: --end of the loop--
+[4b084dc02e1] jit-log-opt-loop}
+[4b084ece50f] {jit-log-opt-bridge
+# bridge out of Guard 0x7541f8798160 with 29 ops
+[p0, p1, p2, p3, p4, i5, i6, i7, i8]
++91: i9 = int_is_zero(i5)
++94: guard_true(i9, descr=<Guard0x7541f87981b0>) [p0, p1, p2, p3, p4, i5, i6, i7, i8]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#30 POP_JUMP_IF_FALSE')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#32 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#34 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#36 BINARY_ADD')
++104: i11 = int_add_ovf(i8, 3)
++111: guard_no_overflow(descr=<Guard0x7541f8769018>) [p0, p1, p2, p3, p4, i5, i6, i7, i8]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#38 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#40 JUMP_FORWARD')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#76 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#78 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#80 BINARY_ADD')
++121: i13 = int_add_ovf(i7, 1)
++128: guard_no_overflow(descr=<Guard0x7541f8769050>) [p0, p1, p2, p3, p4, i5, i6, i7, i8]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#82 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#84 JUMP_ABSOLUTE')
++141: guard_not_invalidated(descr=<Guard0x7541f8769088>) [p0, p1, p2, p3, p4, i5, i6, i7, i8]
++148: i15 = getfield_raw_i(128926280886976, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++161: i17 = int_lt(i15, 0)
++165: guard_false(i17, descr=<Guard0x7541f87690c0>) [p0, p1, p2, p3, p4, i5, i6, i7, i8]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#16 FOR_ITER')
++184: i19 = int_le(i13, 100000)
++191: guard_true(i19, descr=<Guard0x7541f8798200>) [p0, p1, p2, p3, p4, i13, i11, i6, None, None]
++201: i21 = getfield_gc_i(p3, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeIterator.inst_current 8>)
++205: i22 = getfield_gc_i(p3, descr=<FieldS pypy.module.__builtin__.functional.W_IntRangeOneArgIterator.inst_stop 40 pure>)
++209: i24 = int_ge(i22, -9223372036854775807)
++222: guard_true(i24, descr=<Guard0x7541f8798250>) [p0, p1, p2, p3, p4, i13, i11, i6, None, None]
++245: jump(p0, p4, p1, i11, p2, i13, i6, p3, i21, i22, descr=TargetToken(128926202012960))
++288: --end of the loop--
+[4b084ee2bfb] jit-log-opt-bridge}
+[4b0850866f7] {jit-log-opt-bridge
+# bridge out of Guard 0x7541f8768aa0 with 57 ops
+[p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
++123: guard_nonnull_class(p5, ConstClass(W_IntObject), descr=<Guard0x7541f87982a0>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#22 LOAD_CONST')
++163: guard_value(p1, ConstPtr(ptr11), descr=<Guard0x7541f8769440>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#24 BINARY_MODULO')
++176: i12 = getfield_gc_i(p5, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++181: i14 = int_eq(i12, -9223372036854775808)
++181: i16 = int_rshift(i12, 63)
++188: i17 = int_xor(i12, i16)
++194: i19 = uint_mul_high(i17, -3689348814741910323)
++207: i21 = uint_rshift(i19, 3)
++211: i22 = int_xor(i21, i16)
++214: i24 = int_mul(i22, 10)
++218: i25 = int_sub(i12, i24)
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#26 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#28 COMPARE_OP')
++224: i26 = int_is_zero(i25)
++227: guard_false(i26, descr=<Guard0x7541f8769478>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#30 POP_JUMP_IF_FALSE')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#42 LOAD_FAST')
++237: guard_nonnull_class(p3, ConstClass(W_IntObject), descr=<Guard0x7541f87982f0>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#44 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#46 BINARY_ADD')
++269: i28 = getfield_gc_i(p3, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++273: i30 = int_add_ovf(i28, 4)
++277: guard_no_overflow(descr=<Guard0x7541f87694b0>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-12~#48 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#50 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#52 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#54 COMPARE_OP')
++287: i32 = int_lt(i12, 100000)
++294: guard_false(i32, descr=<Guard0x7541f87694e8>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-13~#56 POP_JUMP_IF_FALSE')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-16~#68 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-16~#70 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-16~#72 BINARY_ADD')
++304: i34 = int_add_ovf(i30, 4)
++308: guard_no_overflow(descr=<Guard0x7541f8769520>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-16~#74 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#76 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#78 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#80 BINARY_ADD')
++321: i36 = int_add_ovf(i12, 1)
++325: guard_no_overflow(descr=<Guard0x7541f8769558>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#82 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#84 JUMP_ABSOLUTE')
++338: guard_not_invalidated(descr=<Guard0x7541f8769590>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
++345: i38 = getfield_raw_i(128926280886976, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++358: i40 = int_lt(i38, 0)
++362: guard_false(i40, descr=<Guard0x7541f87695c8>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#16 FOR_ITER')
++381: p41 = new_with_vtable(descr=<SizeDescr 16>)
++421: p42 = new_with_vtable(descr=<SizeDescr 16>)
++432: setfield_gc(p41, i34, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++436: p43 = new_with_vtable(descr=<SizeDescr 16>)
++447: setfield_gc(p42, i36, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++451: setfield_gc(p43, i9, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++468: jump(p0, p8, 16, ConstPtr(ptr45), 5, ConstPtr(null), p2, p41, p4, p42, p43, p6, ConstPtr(null), ConstPtr(null), descr=TargetToken(128926202012896))
++544: --end of the loop--
+[4b0850b235d] jit-log-opt-bridge}
+[4b085195401] {jit-log-opt-bridge
+# bridge out of Guard 0x7541f8768a30 with 46 ops
+[p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
++107: guard_nonnull_class(p5, ConstClass(W_IntObject), descr=<Guard0x7541f8798340>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#22 LOAD_CONST')
++147: guard_value(p1, ConstPtr(ptr11), descr=<Guard0x7541f87698a0>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#24 BINARY_MODULO')
++160: i12 = getfield_gc_i(p5, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++165: i14 = int_eq(i12, -9223372036854775808)
++165: i16 = int_rshift(i12, 63)
++172: i17 = int_xor(i12, i16)
++178: i19 = uint_mul_high(i17, -3689348814741910323)
++191: i21 = uint_rshift(i19, 3)
++195: i22 = int_xor(i21, i16)
++198: i24 = int_mul(i22, 10)
++202: i25 = int_sub(i12, i24)
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#26 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#28 COMPARE_OP')
++208: i26 = int_is_zero(i25)
++211: guard_true(i26, descr=<Guard0x7541f87698d8>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-9~#30 POP_JUMP_IF_FALSE')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#32 LOAD_FAST')
++221: guard_nonnull_class(p3, ConstClass(W_IntObject), descr=<Guard0x7541f8798390>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#34 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#36 BINARY_ADD')
++253: i28 = getfield_gc_i(p3, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++257: i30 = int_add_ovf(i28, 3)
++261: guard_no_overflow(descr=<Guard0x7541f8769910>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#38 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-10~#40 JUMP_FORWARD')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#76 LOAD_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#78 LOAD_CONST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#80 BINARY_ADD')
++271: i32 = int_add_ovf(i12, 1)
++275: guard_no_overflow(descr=<Guard0x7541f8769948>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#82 STORE_FAST')
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-17~#84 JUMP_ABSOLUTE')
++285: guard_not_invalidated(descr=<Guard0x7541f8769980>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
++292: i34 = getfield_raw_i(128926280886976, descr=<FieldS pypysig_long_struct_inner.c_value 0>)
++305: i36 = int_lt(i34, 0)
++309: guard_false(i36, descr=<Guard0x7541f87699b8>) [p0, p1, p2, p3, p4, p5, p6, p7, p8, i9]
+debug_merge_point(0, 0, 'foo;/home/ken/Documents/GitHub/trace-analyzer/src/test/bad_benchmark_2_guided.py:5-8~#16 FOR_ITER')
++328: p37 = new_with_vtable(descr=<SizeDescr 16>)
++368: p38 = new_with_vtable(descr=<SizeDescr 16>)
++379: setfield_gc(p37, i30, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++383: p39 = new_with_vtable(descr=<SizeDescr 16>)
++394: setfield_gc(p38, i32, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++398: setfield_gc(p39, i9, descr=<FieldS pypy.objspace.std.intobject.W_IntObject.inst_intval 8 pure>)
++415: jump(p0, p8, 16, ConstPtr(ptr41), 5, ConstPtr(null), p2, p37, p4, p38, p39, p6, ConstPtr(null), ConstPtr(null), descr=TargetToken(128926202012896))
++496: --end of the loop--
+[4b0851b2287] jit-log-opt-bridge}
+[4bbaa4ee551] {jit-summary
+Tracing:      	5	0.002078
+Backend:      	4	0.000407
+TOTAL:      		17.811938
+ops:             	824
+heapcached ops:  	191
+recorded ops:    	135
+  calls:         	11
+guards:          	70
+opt ops:         	408
+opt guards:      	85
+opt guards shared:	60
+forcings:        	0
+abort: trace too long:	0
+abort: compiling:	0
+abort: vable escape:	0
+abort: bad loop: 	1
+abort: force quasi-immut:	0
+abort: segmenting trace:	0
+virtualizables forced:	0
+nvirtuals:       	23
+nvholes:         	0
+nvreused:        	4
+vecopt tried:    	0
+vecopt success:  	0
+Total # of loops:	1
+Total # of bridges:	3
+Freed # of loops:	0
+Freed # of bridges:	0
+[4bbaa4f3959] jit-summary}
+[4bbaa4fdce7] {jit-backend-counts
+entry 3:604
+PriorToTargetToken(128926202012896):604
+TargetToken(128926202012896):1999800198
+AfterGuardAt(128926202036256):1999800198
+AfterGuardAt(128926201842000):1999800198
+AfterGuardAt(128926201842056):1999800198
+AfterGuardAt(128926201842112):1999800196
+AfterGuardAt(128926202036336):1999800196
+AfterGuardAt(128926201842168):1999800196
+AfterGuardAt(128926201842224):1799820198
+AfterGuardAt(128926202036416):1799820198
+AfterGuardAt(128926201842280):1799820198
+AfterGuardAt(128926201842336):202
+AfterGuardAt(128926201842392):202
+AfterGuardAt(128926201842448):202
+AfterGuardAt(128926201842504):202
+PriorToTargetToken(128926202012960):202
+TargetToken(128926202012960):197714
+AfterGuardAt(128926202036496):197714
+AfterGuardAt(128926202036576):177922
+AfterGuardAt(128926201842560):177922
+AfterGuardAt(128926201842616):177922
+AfterGuardAt(128926201842672):177922
+AfterGuardAt(128926201842728):177922
+AfterGuardAt(128926201842784):177922
+ExitOfToken(3:128926202044448):177922
+bridge 128926202036576:19592
+AfterGuardAt(128926202036656):19592
+AfterGuardAt(128926201843736):19592
+AfterGuardAt(128926201843792):19592
+AfterGuardAt(128926201843848):19592
+AfterGuardAt(128926201843904):19592
+AfterGuardAt(128926202036736):19590
+AfterGuardAt(128926202036816):19590
+ExitOfToken(128926202036576:128926202036576):19590
+bridge 128926201842336:1799819796
+AfterGuardAt(128926202036896):1799819796
+AfterGuardAt(128926201844800):1799819796
+AfterGuardAt(128926201844856):1799819796
+AfterGuardAt(128926202036976):1799819796
+AfterGuardAt(128926201844912):1799819796
+AfterGuardAt(128926201844968):1799819796
+AfterGuardAt(128926201845024):1799819796
+AfterGuardAt(128926201845080):1799819796
+AfterGuardAt(128926201845136):1799819796
+AfterGuardAt(128926201845192):1799819796
+ExitOfToken(128926201842336:128926201842336):1799819796
+bridge 128926201842224:199979798
+AfterGuardAt(128926202037056):199979798
+AfterGuardAt(128926201845920):199979798
+AfterGuardAt(128926201845976):199979798
+AfterGuardAt(128926202037136):199979798
+AfterGuardAt(128926201846032):199979798
+AfterGuardAt(128926201846088):199979798
+AfterGuardAt(128926201846144):199979798
+AfterGuardAt(128926201846200):199979798
+ExitOfToken(128926201842224:128926201842224):199979798
+[4bbaa50224b] jit-backend-counts}
