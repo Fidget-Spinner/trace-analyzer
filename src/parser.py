@@ -16,6 +16,7 @@ class Edge:
 
 @dataclass
 class TraceLike:
+    uuid: int
     id: int
     info: str
     labels_and_guards: list["Label" | "Guard"]
@@ -45,7 +46,7 @@ class TraceLike:
             # We ignore labels, as those have a different address every run anwways.
         # Terminators need not be appended, as that is up to the pypy tracer to decide.
         # We're just responsible for the "shape" of the tree from guards.
-        return {f"Trace:{self.id}" : res}
+        return {f"Trace:{self.uuid}" : res}
         
 
 @dataclass(slots=True)
@@ -77,8 +78,8 @@ class Guard:
 
     def invert_guard(self, warn=True):
         if self.op not in GUARD_OP_INVERTED:
-            if warn:
-                print("Not invertible: ", self.op)
+            # if warn:
+            #     print("Not invertible: ", self.op)
             return None
         return GUARD_OP_INVERTED[self.op]
 
@@ -437,6 +438,7 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
 
     # Create the new alternative bridge from the rest of the existing trace.
     new_bridge = Bridge(
+        worst_guard.bridge.node.uuid,
         worst_guard.id,
         f"swapped of {worst_guard.bridge.node.info}",
         labels_and_guards=after_bridge_labels_and_guards,
@@ -445,7 +447,6 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
     )
     
     worst_guard = replace(worst_guard)
-    worst_guard.inverted = True
     # Merge worst bridge with current trace.
     better_node = replace(node)
 
@@ -456,6 +457,7 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
 
     # invert the guard op
     worst_guard.op = worst_guard.invert_guard()
+    worst_guard.inverted = True    
     new_trunk_after_labels_and_guards = worst_guard.bridge.node.labels_and_guards
 
 
@@ -479,6 +481,7 @@ def parse_and_build_trace_trees(fp):
     all_bridges = []
     all_labels = []
     all_guards = []
+    tracelike_uuid = 0
     for line in fp:
         if line.startswith("# Loop"):
             match = re.match(LOOP_RE, line)
@@ -502,7 +505,8 @@ def parse_and_build_trace_trees(fp):
             assert jump is not None, f"No jump at end of loop? {line}"
             # Sometimes pypy gives negative IDs for fake traces.
             if int(match.group(1)) >= 0:
-                entries.append(Trace(int(match.group(1)), match.group(2), labels_and_guards, jump))
+                entries.append(Trace(tracelike_uuid, int(match.group(1)), match.group(2), labels_and_guards, jump))
+            tracelike_uuid += 1
         elif line.startswith("# bridge out of"):
             match = re.match(BRIDGE_RE, line)
             labels_and_guards = []              
@@ -522,7 +526,8 @@ def parse_and_build_trace_trees(fp):
                 if finish_match := re.match(FINISH_RE, line.strip()):
                     jump = DoneWithThisFrame(match.group(1), 0, PlaceHolderEdge(None, 0))
             assert jump is not None, f"No jump at end of bridge? {line}"          
-            all_bridges.append(Bridge(int(match.group(1), base=16), match.group(2), labels_and_guards, jump))
+            all_bridges.append(Bridge(tracelike_uuid, int(match.group(1), base=16), match.group(2), labels_and_guards, jump))
+            tracelike_uuid += 1
         elif "jit-backend-counts" in line:
             line = next(fp)
             while "jit-backend-counts" not in line:
@@ -571,7 +576,10 @@ def parse_and_build_trace_trees(fp):
 def dump_entries(entries: list[TraceLike], file) -> None:
     import json
     new_list = []
+    entry_id = 0
     for entry in entries:
+        entry.id = entry_id
+        entry_id += 1
         new_list.append(entry.serialize())
     json.dump(new_list, file, separators=(',', ':'))
 
@@ -586,8 +594,8 @@ if __name__ == "__main__":
         for entry in entries:
             print(entry, file=fp)
     # Run to fixpoint.
-    prev_count = -1
-    while prev_count != count_suboptimality(entries):
+    prev_count = float('+inf')
+    while prev_count >= count_suboptimality(entries):
         prev_count = count_suboptimality(entries)
         entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries, requires_invertible_guard=True)
         decide_sub_optimality(entries)
