@@ -281,7 +281,7 @@ def compute_edges(all_entries: list[Trace], all_nodes: list):
                     if nxt.labels_and_guards:
                         count = nxt.labels_and_guards[-1].after_count
                     else:
-                        assert False
+                        count = nxt.enter_count
                     nxt.jump.jump_to_edge.weight = nxt.jump.enter_count = count
                 else:
                     nxt.jump.jump_to_edge.weight = nxt.jump.enter_count
@@ -394,7 +394,7 @@ def clear_sub_optimality(entries: list[TraceLike]):
 
 DID_REORDER = False
 
-def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_invertible_guard: bool):
+def reorder_subtree_to_decrease_suboptimality_bottom_up(all_nodes, edge: Edge, requires_invertible_guard: bool):
     global DID_REORDER
     if DID_REORDER:
         return edge
@@ -415,7 +415,7 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
     for guard in node.labels_and_guards:
         if isinstance(guard, Guard) and guard.bridge is not None:
             copy = replace(guard)
-            copy.bridge = reorder_subtree_to_decrease_suboptimality(all_nodes, guard.bridge, requires_invertible_guard)
+            copy.bridge = reorder_subtree_to_decrease_suboptimality_bottom_up(all_nodes, guard.bridge, requires_invertible_guard)
             res.append(copy)
         else:
             res.append(guard)
@@ -503,12 +503,104 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
     DID_REORDER = True
     return Edge(better_node, weight=edge.weight)
 
-def reorder_to_decrease_suboptimality(all_nodes, entries: list[Trace], requires_invertible_guard: bool=False):
+def reorder_subtree_to_decrease_suboptimality_top_down(start_edge: Edge, requires_invertible_guard: bool):
+    worklist = [start_edge] # bfs order
+    seen = set()
+    while worklist:
+        edge = worklist.pop(0)
+        assert isinstance(edge, Edge)
+        node = edge.node
+        if id(node) in seen:
+            continue
+        seen.add(id(node))
+       
+        for guard in node.labels_and_guards:
+            if isinstance(guard, Guard) and guard.bridge is not None:
+                worklist.append(guard.bridge)
+
+        # It's already non-suboptimal, nothing to do here.
+        if not node.is_suboptimal_cause:
+            continue
+
+        # Greedy choice (decrease suboptimality): Now try swapping with the bridge that is most suboptimal
+        # We just take the hottest bridge.
+        worst_guard = None
+        split = -1
+        worst_bridge_hotness = -1
+        incoming_weight = -1
+        jump_hotness = node.jump.enter_count
+        for idx, label_or_guard in enumerate(node.labels_and_guards):
+            assert isinstance(label_or_guard, Guard) or isinstance(label_or_guard, Label)
+            if isinstance(label_or_guard, Guard) and label_or_guard.bridge is not None:
+                if label_or_guard.bridge.weight > jump_hotness and label_or_guard.bridge.weight > worst_bridge_hotness:
+                    if requires_invertible_guard and label_or_guard.invert_guard() is not None:
+                        worst_bridge_hotness = label_or_guard.bridge.weight
+                        worst_guard = label_or_guard
+                        split = idx
+                        incoming_weight = label_or_guard.after_count
+
+        if split == -1:
+            # Non-invertible. In theory, we could still invert them by swapping out the guards and their identities
+            # the problem however is that the identities are dependent on pypy addresses, which make them near impossible
+            # to predict at runtime if we use some sort of training data to guide our traces.
+            # Still, it's useful to know if "in theory" we could make these more optimal, as a higher-tier optimizing
+            # compiler should still be able to make use of this information.
+            continue
+        assert incoming_weight != -1
+        before_bridge_labels_and_guards = node.labels_and_guards[:split]
+        after_bridge_labels_and_guards = node.labels_and_guards[split+1:]
+
+        assert incoming_weight >= 0
+
+        # Create the new alternative bridge from the rest of the existing trace.
+        new_bridge = Bridge(
+            worst_guard.bridge.node.uuid,
+            worst_guard.id,
+            f"swapped of {worst_guard.bridge.node.info}",
+            labels_and_guards=after_bridge_labels_and_guards,
+            jump=node.jump,
+            enter_count=incoming_weight
+        )
+        
+        worst_guard = worst_guard
+        # Merge worst bridge with current trace.
+        better_node = node
+
+        # swap out the jumps
+        tmp = better_node.jump
+        better_node.jump = replace(worst_guard.bridge.node.jump)
+        worst_guard.bridge.node.jump = replace(tmp)
+
+        # invert the guard op
+        worst_guard.op = worst_guard.invert_guard()
+        worst_guard.inverted = True    
+        new_trunk_after_labels_and_guards = worst_guard.bridge.node.labels_and_guards
+
+
+        # Merge worst bridge with current trace.
+        better_node.labels_and_guards = before_bridge_labels_and_guards + [worst_guard] + new_trunk_after_labels_and_guards
+        worst_guard.bridge.node = new_bridge
+        # print(incoming_weight, outgoing)
+        worst_guard.bridge.weight =  incoming_weight
+
+        # stop after inverting a single guard.
+        return start_edge
+    return start_edge
+
+
+def reorder_to_decrease_suboptimality_bottom_up(all_nodes, entries: list[Trace], requires_invertible_guard: bool=False):
     """
     Tries to swap the offending suboptimal bridge with the main trace to see if it makes things
     more optimal.
     """
-    return [reorder_subtree_to_decrease_suboptimality(all_nodes, Edge(entry, entry.enter_count), requires_invertible_guard).node for entry in entries]
+    return [reorder_subtree_to_decrease_suboptimality_bottom_up(all_nodes, Edge(entry, entry.enter_count), requires_invertible_guard).node for entry in entries]
+
+def reorder_to_decrease_suboptimality_top_down(entries: list[Trace], requires_invertible_guard: bool=False):
+    """
+    Tries to swap the offending suboptimal bridge with the main trace to see if it makes things
+    more optimal.
+    """
+    return [reorder_subtree_to_decrease_suboptimality_top_down(Edge(entry, entry.enter_count), requires_invertible_guard).node for entry in entries]
 
 
 def parse_and_build_trace_trees(fp):
@@ -639,7 +731,8 @@ if __name__ == "__main__":
     #     clear_sub_optimality(entries)
     #     decide_sub_optimality(entries)
     # compute_edges(entries, entries + all_bridges)
-    entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries, requires_invertible_guard=True)
+    # entries = reorder_to_decrease_suboptimality_bottom_up(entries + all_bridges, entries, requires_invertible_guard=True)
+    entries = reorder_to_decrease_suboptimality_top_down(entries, requires_invertible_guard=True)
     clear_sub_optimality(entries)
     decide_sub_optimality(entries)
     with open(sys.argv[3], "w") as fp:
