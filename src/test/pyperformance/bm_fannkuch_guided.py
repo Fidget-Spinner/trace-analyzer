@@ -64,4 +64,4 @@ if __name__ == "__main__":
         start = time.time()
         fannkuch(10)
         end = time.time()
-        print(f"TIME: {end - start}")
+        print(f"TIME:{end - start}")
