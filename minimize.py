@@ -9,7 +9,7 @@ def minimize():
     times = []
     suboptimal_counts = []
     seen_strcontent = set()
-    for i in range(15):
+    for i in range(50):
         # write_to = f"{sys.argv[1]}_{i}"
         write_to = "scratch"
         write_to_serialized = f"{sys.argv[1]}_{i}_serialized"

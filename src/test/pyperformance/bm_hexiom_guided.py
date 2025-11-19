@@ -673,5 +673,11 @@ if __name__ == "__main__":
         import time
         start = time.time()
         main(100, DEFAULT_LEVEL)
+        main(100, DEFAULT_LEVEL)
+        main(100, DEFAULT_LEVEL)
+        main(100, DEFAULT_LEVEL)
+        main(100, DEFAULT_LEVEL)
+        main(100, DEFAULT_LEVEL)
+        main(100, DEFAULT_LEVEL)                                      
         end = time.time()
         print(f"TIME:{end - start}")

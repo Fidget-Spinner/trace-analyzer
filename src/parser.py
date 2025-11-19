@@ -275,10 +275,17 @@ def compute_edges(all_entries: list[Trace], all_nodes: list):
                 if nxt.jump.jump_to_edge.weight != 0:
                     # print("Warning: wasteful recomputation")
                     continue
-                nxt.jump.jump_to_edge.weight = nxt.jump.enter_count
+                # Bug in our instrumentation. TODO Fix me. For now, just
+                # get it from the "afters" of the last guard before this jump
+                if nxt.jump.enter_count == 0:
+                    if nxt.labels_and_guards:
+                        count = nxt.labels_and_guards[-1].after_count
+                    else:
+                        assert False
+                    nxt.jump.jump_to_edge.weight = nxt.jump.enter_count = count
+                else:
+                    nxt.jump.jump_to_edge.weight = nxt.jump.enter_count
                 queue.extend(nxt.labels_and_guards)
-                # Find the jump label in the labels and guards
-                # deduct the backedge weight to eventually find the initial entry for that label.
                 if isinstance(nxt.jump.jump_to_edge.node, Label):
                     queue.append(nxt.jump.jump_to_edge.node)
             elif isinstance(nxt, Label):
@@ -385,11 +392,12 @@ def clear_sub_optimality(entries: list[TraceLike]):
     for entry in entries:
         clear_sub_optimality_for_single_entry(entry, entry)
 
-
+DID_REORDER = False
 
 def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_invertible_guard: bool):
-    # TODO: account for donewiththisframe exit counts
-
+    global DID_REORDER
+    if DID_REORDER:
+        return edge
     # Trivial (base) case: this is a single node,
     # it is trivially optimal.
     node = edge.node
@@ -412,6 +420,10 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
         else:
             res.append(guard)
     node.labels_and_guards = res
+
+    if DID_REORDER:
+        return Edge(node, weight=edge.weight)
+
 
     # It's already non-suboptimal, nothing to do here.
     if not node.is_suboptimal_cause:
@@ -487,6 +499,8 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
     worst_guard.bridge.node = new_bridge
     # print(incoming_weight, outgoing)
     worst_guard.bridge.weight =  incoming_weight
+
+    DID_REORDER = True
     return Edge(better_node, weight=edge.weight)
 
 def reorder_to_decrease_suboptimality(all_nodes, entries: list[Trace], requires_invertible_guard: bool=False):
@@ -619,13 +633,13 @@ if __name__ == "__main__":
             print(entry, file=fp)
     # Run to fixpoint.
     prev_count = float('+inf')
-    for _ in range(11):
-        prev_count = count_suboptimality(entries)
-        entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries, requires_invertible_guard=True)
-        clear_sub_optimality(entries)
-        decide_sub_optimality(entries)
+    # for _ in range(11):
+    #     prev_count = count_suboptimality(entries)
+    #     entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries, requires_invertible_guard=True)
+    #     clear_sub_optimality(entries)
+    #     decide_sub_optimality(entries)
     # compute_edges(entries, entries + all_bridges)
-    # entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries, requires_invertible_guard=True)
+    entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries, requires_invertible_guard=True)
     clear_sub_optimality(entries)
     decide_sub_optimality(entries)
     with open(sys.argv[3], "w") as fp:
