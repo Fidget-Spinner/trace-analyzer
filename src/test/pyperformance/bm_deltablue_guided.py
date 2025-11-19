@@ -628,13 +628,19 @@ def delta_blue(n):
     projection_test(n)
 
 
+
 if __name__ == "__main__":
     # runner = pyperf.Runner()
-    # runner.metadata['description'] = "DeltaBlue benchmark"
-
-    # n = 100
-    # runner.bench_func('deltablue', delta_blue, n)
-
-    # import time
-    # import sys
-    delta_blue(10000)
+    # arg = DEFAULT_ARG
+    # runner.bench_func('fannkuch', fannkuch, arg)
+    import pypyjit
+    import sys
+    pypyjit.set_param(shapefile=sys.argv[1])
+    delta_blue(1000)
+    if sys.argv[2] != "profile":
+        import time
+        pypyjit.set_param(shapefile="empty")
+        start = time.time()
+        delta_blue(1000)
+        end = time.time()
+        print(f"TIME: {end - start}")

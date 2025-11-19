@@ -25,4 +25,4 @@ import time
 start = time.time()
 foo(1, loops=500000000)
 end = time.time()
-print(f"TIME {end-start}")
+print(f"TIME:{end-start}")
