@@ -74,8 +74,11 @@ class Guard:
     after_count: int = 0
 
     def __str__(self):
+        post = "I" if self.inverted else ""
+        if self.expected_to_be_inverted:
+            post = "P"        
         bridge_repr = "" if self.bridge is None else str(self.bridge)
-        return f"Guard<{self.id}, op={self.op}, afters={self.after_count}, bridge={bridge_repr}>"
+        return f"Guard{post}<{self.id}, op={self.op}, afters={self.after_count}, bridge={bridge_repr}>"
 
     def invert_guard(self, warn=True):
         if self.op not in GUARD_OP_INVERTED:
@@ -414,6 +417,11 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
     if not node.is_suboptimal_cause:
         return Edge(node, weight=edge.weight)
 
+    seen_an_expected_inverted_guard_idxes = []
+    for idx, guard in enumerate(node.labels_and_guards):
+        if isinstance(guard, Guard) and guard.expected_to_be_inverted:
+            seen_an_expected_inverted_guard_idxes.append(idx)
+
     # Greedy choice (decrease suboptimality): Now try swapping with the bridge that is most suboptimal
     # We just take the hottest bridge.
     worst_guard = None
@@ -425,6 +433,11 @@ def reorder_subtree_to_decrease_suboptimality(all_nodes, edge: Edge, requires_in
         if isinstance(label_or_guard, Guard) and label_or_guard.bridge is not None:
             if label_or_guard.bridge.weight > worst_bridge_hotness:
                 if requires_invertible_guard and label_or_guard.invert_guard() is not None:
+                    # We can only swap if there are no already inverted guards AFTER this bridge.
+                    # The reason is that we want to steadily decrease the number of suboptimal guards,
+                    # not thrash around!                    
+                    if any(already_inverted_idx >= idx for already_inverted_idx in seen_an_expected_inverted_guard_idxes):
+                        continue
                     worst_bridge_hotness = label_or_guard.bridge.weight
                     worst_guard = label_or_guard
                     split = idx
@@ -605,11 +618,12 @@ if __name__ == "__main__":
             print(entry, file=fp)
     # Run to fixpoint.
     prev_count = float('+inf')
-    for _ in range(20):
+    for _ in range(10):
         prev_count = count_suboptimality(entries)
         entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries, requires_invertible_guard=True)
         decide_sub_optimality(entries)
     # compute_edges(entries, entries + all_bridges)
+    # entries = reorder_to_decrease_suboptimality(entries + all_bridges, entries, requires_invertible_guard=True)
     clear_sub_optimality(entries)
     decide_sub_optimality(entries)
     with open(sys.argv[3], "w") as fp:

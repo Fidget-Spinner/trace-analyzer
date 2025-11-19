@@ -58,9 +58,10 @@ if __name__ == "__main__":
     # runner.bench_func('fannkuch', fannkuch, arg)
     # import sys
     fannkuch(10)
-    import time
-    pypyjit.set_param(shapefile="empty")
-    start = time.time()
-    fannkuch(10)
-    end = time.time()
-    print(f"{end - start}")
+    if sys.argv[2] != "profile":
+        import time
+        pypyjit.set_param(shapefile="empty")
+        start = time.time()
+        fannkuch(10)
+        end = time.time()
+        print(f"TIME: {end - start}")

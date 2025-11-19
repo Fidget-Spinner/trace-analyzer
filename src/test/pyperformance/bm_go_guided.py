@@ -469,15 +469,16 @@ if __name__ == "__main__":
     # for _ in range(10):
     #     versus_cpu()    
     # start = time.perf_counter()
-    for _ in range(40):
+    for _ in range(10):
         versus_cpu()
-    pypyjit.set_param(shapefile="empty")
-    import time
-    start = time.time()
-    for _ in range(40):
-        versus_cpu()
-    end = time.time()
-    print(end - start)
+    if sys.argv[2] != "profile":
+        pypyjit.set_param(shapefile="empty")
+        import time
+        start = time.time()
+        for _ in range(10):
+            versus_cpu()
+        end = time.time()
+        print(end - start)
     # end = time.perf_counter()
     # print(f"TIME: {end - start}")
     # sys._dump_tracelets("hello.gvz")

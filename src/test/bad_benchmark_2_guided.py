@@ -19,10 +19,10 @@ def foo(x, loops):
         y = y + 1
     return x
 
-print(foo(1, loops=2000000000))
+print(foo(1, loops=500000000))
 
 import time
 start = time.time()
-foo(1, loops=2000000000)
+foo(1, loops=500000000)
 end = time.time()
 print(f"TIME {end-start}")
