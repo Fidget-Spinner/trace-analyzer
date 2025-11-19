@@ -478,7 +478,7 @@ if __name__ == "__main__":
         for _ in range(10):
             versus_cpu()
         end = time.time()
-        print(end - start)
+        print(f"TIME:{end - start}")
     # end = time.perf_counter()
     # print(f"TIME: {end - start}")
     # sys._dump_tracelets("hello.gvz")
