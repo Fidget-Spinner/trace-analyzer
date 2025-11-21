@@ -47,6 +47,17 @@ def minimize():
         shapefile = write_to_serialized
     disable_turbo_boost()
     time.sleep(10)# cooldown
+    write_to_serialized = f"empty"
+    contents = os.popen(f"~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c {sys.argv[1]}.py {write_to_serialized} run").readlines()
+    for line in contents:
+        if line.startswith("TIME:"):
+            tim = float(line[len("TIME:"):])
+            print("empty", tim)
+            times.append(tim)
+            break
+    else:
+        print("COULD NOT FIND TIME")
+        assert False    
     for x in range(i):
         write_to_serialized = f"{sys.argv[1]}_{x}_serialized"
         contents = os.popen(f"~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c {sys.argv[1]}.py {write_to_serialized} run").readlines()
