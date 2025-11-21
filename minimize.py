@@ -58,7 +58,7 @@ def minimize():
                 break
         else:
             print("COULD NOT FIND TIME")
-            assert False        
+            assert False
     with open("stats.txt", "w") as fp:
         print(times, file=fp)
         print(suboptimal_counts, file=fp)
@@ -66,4 +66,8 @@ def minimize():
         least_suboptimal = min(suboptimal_counts)
         print(f"Worst: {most_suboptimal}, {suboptimal_counts.index(most_suboptimal)}th", file=fp)
         print(f"Best: {least_suboptimal}, {suboptimal_counts.index(least_suboptimal)}th ", file=fp)
-minimize()
+
+try:
+    minimize()
+finally:
+    enable_turbo_boost()

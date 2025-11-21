@@ -14,8 +14,10 @@ def foo(x, loops):
 
 foo(1, loops=200000000)
 
-import time
-start = time.time()
-foo(1, loops=200000000)
-end = time.time()
-print(f"{end - start}")
+if sys.argv[2] != "profile":
+    pypyjit.set_param(shapefile="empty")
+    import time
+    start = time.time()
+    foo(1, loops=200000000)
+    end = time.time()
+    print(f"TIME:{end - start}")
