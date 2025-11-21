@@ -93,7 +93,7 @@ class Guard:
             post = "P"
         if self.bridge is not None:
             return {f"Guard{post}:{self.op}": self.bridge.node.serialize()}
-        return {f"Guard:{self.op}": None}
+        return {f"Guard{post}:{self.op}": None}
 
 
 @dataclass(slots=True)
