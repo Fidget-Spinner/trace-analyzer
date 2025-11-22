@@ -19,6 +19,7 @@ class TraceLike:
     uuid: int
     id: int
     info: str
+    header: "PeeledHeader | None"
     labels_and_guards: list["Label" | "Guard"]
 
     # Terminator.
@@ -104,6 +105,11 @@ class Label:
 
     def __str__(self):
         return f"Label<{self.id}, enters={self.before_count}, afters={self.after_count}>"
+
+@dataclass(slots=True)
+class PeeledHeader:
+    labels_and_guards: list["Label" | "Guard"]
+
 
 @dataclass(slots=True)
 class Jump:
@@ -557,6 +563,7 @@ def reorder_subtree_to_decrease_suboptimality_top_down(start_edge: Edge, require
             worst_guard.bridge.node.uuid,
             worst_guard.id,
             f"swapped of {worst_guard.bridge.node.info}",
+            header=None,
             labels_and_guards=after_bridge_labels_and_guards,
             jump=node.jump,
             enter_count=incoming_weight
@@ -578,7 +585,8 @@ def reorder_subtree_to_decrease_suboptimality_top_down(start_edge: Edge, require
 
 
         # Merge worst bridge with current trace.
-        better_node.labels_and_guards = before_bridge_labels_and_guards + [worst_guard] + new_trunk_after_labels_and_guards
+        # We don't care about the traces after, as after we invert this guard, everything is up to the tracer.
+        better_node.labels_and_guards = before_bridge_labels_and_guards + [worst_guard] # + new_trunk_after_labels_and_guards
         worst_guard.bridge.node = new_bridge
         # print(incoming_weight, outgoing)
         worst_guard.bridge.weight =  incoming_weight
@@ -608,11 +616,15 @@ def parse_and_build_trace_trees(fp):
     all_bridges = []
     all_labels = []
     all_guards = []
+    all_peeled_headers = []
     tracelike_uuid = 0
     for line in fp:
+        peeled_loop_label_and_guard_idx = -1
+        peeled_loop_seen = 0
+        labels_and_guards = []
+        peeled_header = None
         if line.startswith("# Loop"):
             match = re.match(LOOP_RE, line)
-            labels_and_guards = []
             jump = None
             while END_LOOP_MARKER not in line:
                 line = next(fp)
@@ -629,14 +641,31 @@ def parse_and_build_trace_trees(fp):
                     jump = Jump(int(jump_match.group(1)))
                 if finish_match := re.match(FINISH_RE, line.strip()):
                     jump = DoneWithThisFrame(match.group(1), 0, PlaceHolderEdge(None, 0))
+                # Saw a peeled loop. Reset everything, as loop peeling is done by
+                # the loop optimizer in pypy, not the trace recorder.Tthus, the trace
+                # recorder has no knowledge of this and we would inform the trace recorder
+                # wrongly if we were to feed the peeled loop preheader in.
+                # This does give up some inversion possibilities. However, the assumption
+                # is that most of the interesting guard failures are going to happen
+                # in the peeled loop, as that part is hotter than the preheader.
+                if "jit_debug('peeled loop')" in line:
+                    if peeled_loop_seen == 0:
+                        peeled_loop_label_and_guard_idx = len(labels_and_guards)
+                    peeled_loop_seen += 1
+
             assert jump is not None, f"No jump at end of loop? {line}"
             # Sometimes pypy gives negative IDs for fake traces.
             if int(match.group(1)) >= 0:
-                entries.append(Trace(tracelike_uuid, int(match.group(1)), match.group(2), labels_and_guards, jump))
+                # Peeled a loop.
+                if peeled_loop_seen >= 2:
+                    assert peeled_loop_label_and_guard_idx != -1
+                    peeled_header = PeeledHeader(labels_and_guards[:peeled_loop_label_and_guard_idx])
+                    labels_and_guards = labels_and_guards[peeled_loop_label_and_guard_idx:]
+                    all_peeled_headers.append(peeled_header)
+                entries.append(Trace(tracelike_uuid, int(match.group(1)), match.group(2), peeled_header, labels_and_guards, jump))
             tracelike_uuid += 1
         elif line.startswith("# bridge out of"):
-            match = re.match(BRIDGE_RE, line)
-            labels_and_guards = []              
+            match = re.match(BRIDGE_RE, line)       
             while END_LOOP_MARKER not in line:
                 line = next(fp)
                 if label_match := re.match(LABEL_RE, line.strip()):
@@ -652,8 +681,18 @@ def parse_and_build_trace_trees(fp):
                     jump = Jump(int(jump_match.group(1)))
                 if finish_match := re.match(FINISH_RE, line.strip()):
                     jump = DoneWithThisFrame(match.group(1), 0, PlaceHolderEdge(None, 0))
-            assert jump is not None, f"No jump at end of bridge? {line}"          
-            all_bridges.append(Bridge(tracelike_uuid, int(match.group(1), base=16), match.group(2), labels_and_guards, jump))
+                if "jit_debug('peeled loop')" in line:
+                    if peeled_loop_seen == 0:
+                        peeled_loop_label_and_guard_idx = len(labels_and_guards)
+                    peeled_loop_seen += 1
+            assert jump is not None, f"No jump at end of bridge? {line}"
+            # Peeled a loop.
+            if peeled_loop_seen >= 2:
+                assert peeled_loop_label_and_guard_idx != -1
+                peeled_header = PeeledHeader(labels_and_guards[:peeled_loop_label_and_guard_idx])
+                labels_and_guards = labels_and_guards[peeled_loop_label_and_guard_idx:]            
+                all_peeled_headers.append(peeled_header)
+            all_bridges.append(Bridge(tracelike_uuid, int(match.group(1), base=16), match.group(2), peeled_header, labels_and_guards, jump))
             tracelike_uuid += 1
         elif "jit-backend-counts" in line:
             line = next(fp)
@@ -695,7 +734,7 @@ def parse_and_build_trace_trees(fp):
         # is a terminator
         if isinstance(jump, DoneWithThisFrame):        
             continue
-        target_trace = find_label_obj_via_label(entries + all_bridges, jump.id)
+        target_trace = find_label_obj_via_label(entries + all_bridges + all_peeled_headers, jump.id)
         # loop.jump = Jump(jump.id, Edge(replace(target_trace)))
         loop.jump.jump_to_edge = Edge(target_trace)
         assert loop.jump.jump_to_edge is not None

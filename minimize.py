@@ -14,7 +14,7 @@ def enable_turbo_boost():
 import time
 
 def minimize():
-    shapefile = "empty"
+    shapefile = "profile"
     prev_suboptimal_count = float('+inf')
     times = []
     suboptimal_counts = []
