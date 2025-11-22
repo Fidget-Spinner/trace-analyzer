@@ -22,7 +22,7 @@ def minimize():
     enable_turbo_boost()
     for i in range(N_ITERS):
         # write_to = f"{sys.argv[1]}_{i}"
-        write_to = "scratch"
+        write_to = f"scratch-{i}"
         write_to_serialized = f"{sys.argv[1]}_{i}_serialized"
         os.popen(f"PYPYLOG=jit-log-opt,jit-summary,jit-backend-counts,jit-abort-log:{write_to} ~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c {sys.argv[1]}.py {shapefile} profile").readlines()
         os.system(f"pypy3 src/parser.py {write_to} before.txt after.txt {write_to_serialized}")
@@ -57,10 +57,10 @@ def minimize():
             break
     else:
         print("COULD NOT FIND TIME")
-        assert False    
+        assert False
     for x in range(i):
         write_to_serialized = f"{sys.argv[1]}_{x}_serialized"
-        contents = os.popen(f"~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c {sys.argv[1]}.py {write_to_serialized} run").readlines()
+        contents = os.popen(f'~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c {sys.argv[1]}.py "{write_to_serialized}:enable_opt" run').readlines()
         for line in contents:
             if line.startswith("TIME:"):
                 tim = float(line[len("TIME:"):])
