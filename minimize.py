@@ -24,7 +24,7 @@ def minimize():
         # write_to = f"{sys.argv[1]}_{i}"
         write_to = f"scratch-{i}"
         write_to_serialized = f"{sys.argv[1]}_{i}_serialized"
-        os.popen(f"PYPYLOG=jit-log-opt,jit-summary,jit-backend-counts,jit-abort-log:{write_to} ~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c {sys.argv[1]}.py {shapefile} profile").readlines()
+        os.popen(f"PYPYLOG=jit-log-opt,jit-summary,jit-backend-counts,jit-abort-log:{write_to} ~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c {sys.argv[1]}.py {shapefile}:disable_opt profile").readlines()
         os.system(f"pypy3 src/parser.py {write_to} before.txt after.txt {write_to_serialized}")
         with open("before.txt", "r") as fp:
             next_suboptimal_count = fp.read().count("SUBOPTIMAL")
