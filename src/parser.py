@@ -211,6 +211,8 @@ def find_bridge_via_label(all_nodes: list[Bridge | Trace], label: int) -> Bridge
 
 
 def add_entry_count(all_entries: list[Trace], entry_id: int, count: int):
+    if count == 0:
+        return    
     for entry in all_entries:
         if entry.id == entry_id:
             entry.enter_count = count
@@ -218,6 +220,8 @@ def add_entry_count(all_entries: list[Trace], entry_id: int, count: int):
     assert False, f"Could not find entry trace {entry_id}"
 
 def add_bridge_count(all_entries: list[Bridge], guard_id: int, count: int):
+    if count == 0:
+        return
     for bridge in all_entries:
         if bridge.id == guard_id:
             bridge.enter_count = count
@@ -239,6 +243,8 @@ def add_label_after_count(all_entries: list[Label], label_id: int, count: int):
     assert False, "Could not find label"
 
 def add_jump_count(all_entries: list[TraceLike], jump_id: int, count: int):
+    if count == 0:
+        return    
     if jump_id < 0:
         return
     for trace in all_entries:
@@ -248,6 +254,8 @@ def add_jump_count(all_entries: list[TraceLike], jump_id: int, count: int):
     assert False, f"Could not find jump {jump_id}"
 
 def add_guard_after_count(all_guards: list[Guard], guard_id: int, count: int, expected_inversion: bool = False):
+    if count == 0:
+        return
     for guard in all_guards:
         if guard.id == guard_id:
             guard.after_count = count
@@ -509,7 +517,7 @@ def reorder_subtree_to_decrease_suboptimality_bottom_up(all_nodes, edge: Edge, r
     DID_REORDER = True
     return Edge(better_node, weight=edge.weight)
 
-def reorder_subtree_to_decrease_suboptimality_top_down(start_edge: Edge, requires_invertible_guard: bool):
+def reorder_subtree_to_decrease_suboptimality_top_down(start_edge: Edge, requires_invertible_guard: bool) -> tuple[Edge, bool]:
     worklist = [start_edge] # bfs order
     seen = set()
     while worklist:
@@ -592,8 +600,8 @@ def reorder_subtree_to_decrease_suboptimality_top_down(start_edge: Edge, require
         worst_guard.bridge.weight =  incoming_weight
 
         # stop after inverting a single guard.
-        return start_edge
-    return start_edge
+        return start_edge, True
+    return start_edge, False
 
 
 def reorder_to_decrease_suboptimality_bottom_up(all_nodes, entries: list[Trace], requires_invertible_guard: bool=False):
@@ -608,7 +616,14 @@ def reorder_to_decrease_suboptimality_top_down(entries: list[Trace], requires_in
     Tries to swap the offending suboptimal bridge with the main trace to see if it makes things
     more optimal.
     """
-    return [reorder_subtree_to_decrease_suboptimality_top_down(Edge(entry, entry.enter_count), requires_invertible_guard).node for entry in entries]
+    res = []
+    for idx, entry in enumerate(entries):
+        pair = reorder_subtree_to_decrease_suboptimality_top_down(Edge(entry, entry.enter_count), requires_invertible_guard)
+        res.append(pair[0].node)
+        if pair[1]:
+            res.extend(entries[idx+1:])
+            break
+    return res
 
 
 def parse_and_build_trace_trees(fp):
