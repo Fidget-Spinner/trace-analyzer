@@ -17,7 +17,8 @@ def enable_turbo_boost():
 
 import time
 
-PYPY_PATH = "~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c"
+# PYPY_PATH = "~/Documents/GitHub/pypy/pypy/goal/pypy3.11-c"
+PYPY_PATH = sys.argv[1]
 
 LOOP_FILENAME = "loops"
 # EXTRA_OPTS = "--jit enable_opts=intbounds:rewrite:virtualize:string:pure:earlyforce:heap"
