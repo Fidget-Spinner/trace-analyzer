@@ -119,7 +119,7 @@ def minimize(bench_name, inner_iterations):
         match = AVERAGE_PAT.match(last_iteration)
         time_taken = float(match.group(1))
         pct_reduction = (best_time_so_far - time_taken) / time_taken * 100
-        fp.write(f"{bench_name},{time_taken},{best_time_so_far},{pct_reduction}")
+        fp.write(f"{bench_name},{time_taken},{best_time_so_far},{pct_reduction}\n")
 
 
 
