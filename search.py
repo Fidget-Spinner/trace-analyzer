@@ -94,7 +94,7 @@ def minimize(bench_name, inner_iterations):
                 print(last_iteration)
                 match = AVERAGE_PAT.match(last_iteration)
                 time_taken = float(match.group(1))
-                if time_taken < best_time_so_far * 0.95:
+                if time_taken < best_time_so_far * 0.96:
                     best_time_so_far = time_taken
                     print(f"BETTER TIME FOUND: {best_time_so_far}")
                     os.system(f"cp {LOOP_FILENAME} {BEST_LOOP_FILENAME}")
@@ -131,11 +131,11 @@ def initialize_loopfile():
         fp.write("\n")
         fp.write(','.join([f"{PERTURB_BY}"] * MAX_LOOPS_SUPPORTED))
         fp.write("\n")
-    # Clear the file
-    with open(STATS_FILE, "w") as fp:
-        pass
 try:
     disable_turbo_boost()
+    # Clear the file
+    with open(STATS_FILE, "w") as fp:
+        pass    
     for bench_name, inner_iterations in AWFY_BENCHMARKS.items():
         initialize_loopfile()
         minimize(bench_name, inner_iterations)
