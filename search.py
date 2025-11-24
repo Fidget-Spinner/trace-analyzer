@@ -76,6 +76,7 @@ AWFY_BENCHMARKS = {
 }
 
 STATS_FILE = "stats.txt"
+STATS_FILE_SORTED = "stats-sorted.txt"
 
 def minimize(bench_name, inner_iterations):
     best_time_so_far = float('+inf')
@@ -132,12 +133,24 @@ def initialize_loopfile():
         fp.write(','.join([f"{PERTURB_BY}"] * MAX_LOOPS_SUPPORTED))
         fp.write("\n")
 try:
-    disable_turbo_boost()
+    # disable_turbo_boost()
     # Clear the file
     with open(STATS_FILE, "w") as fp:
         pass    
     for bench_name, inner_iterations in AWFY_BENCHMARKS.items():
         initialize_loopfile()
         minimize(bench_name, inner_iterations)
+    with open(STATS_FILE, "r") as fp:
+        lines = fp.readlines()
+        contents = [x.split(",") for x in lines]
+        for t in contents:
+            t[3] = float(t[3].strip())
+        contents.sort(key=lambda a:a[3])
+        for t in contents:
+            t[3] = f"{t[3]:.2f}"
+        with open(STATS_FILE_SORTED, "w") as fp:
+            for line in contents:
+                fp.write(",".join(line) + "\n")
 finally:
-    enable_turbo_boost()
+    # enable_turbo_boost()
+    pass
