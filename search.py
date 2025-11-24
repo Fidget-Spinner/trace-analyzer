@@ -75,6 +75,8 @@ AWFY_BENCHMARKS = {
     "Go": 1,
 }
 
+STATS_FILE = "stats.txt"
+
 def minimize(bench_name, inner_iterations):
     best_time_so_far = float('+inf')
     BEST_LOOP_FILENAME = f"loops_best_{bench_name}"
@@ -92,7 +94,7 @@ def minimize(bench_name, inner_iterations):
                 print(last_iteration)
                 match = AVERAGE_PAT.match(last_iteration)
                 time_taken = float(match.group(1))
-                if time_taken < best_time_so_far * 0.98:
+                if time_taken < best_time_so_far * 0.95:
                     best_time_so_far = time_taken
                     print(f"BETTER TIME FOUND: {best_time_so_far}")
                     os.system(f"cp {LOOP_FILENAME} {BEST_LOOP_FILENAME}")
@@ -105,6 +107,20 @@ def minimize(bench_name, inner_iterations):
             # reset the loop to the best one, and start mutating from there.
             os.system(f"cp {BEST_LOOP_FILENAME} {LOOP_FILENAME}")
             mutate()
+    with open(STATS_FILE, "a") as fp:
+        # Note: no extra opts here, so it's just default pypy!
+        contents = os.popen(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} 10 {inner_iterations}").readlines()
+        last_iteration = None
+        for line in contents:
+            if line.strip().startswith(f"{bench_name}: iterations="):
+                last_iteration = line
+        assert last_iteration is not None
+        print(last_iteration)
+        match = AVERAGE_PAT.match(last_iteration)
+        time_taken = float(match.group(1))
+        pct_reduction = (best_time_so_far - time_taken) / time_taken * 100
+        fp.write(f"{bench_name},{time_taken},{best_time_so_far},{pct_reduction}")
+
 
 
 def initialize_loopfile():
@@ -115,6 +131,9 @@ def initialize_loopfile():
         fp.write("\n")
         fp.write(','.join([f"{PERTURB_BY}"] * MAX_LOOPS_SUPPORTED))
         fp.write("\n")
+    # Clear the file
+    with open(STATS_FILE, "w") as fp:
+        pass
 try:
     disable_turbo_boost()
     for bench_name, inner_iterations in AWFY_BENCHMARKS.items():
