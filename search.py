@@ -5,9 +5,11 @@ import subprocess
 
 N_ITERS = 25
 
-MAX_NO_PROGRESS_THRESHOLD = 5
+MAX_NO_PROGRESS_THRESHOLD = 8
 
 MAX_LOOPS_SUPPORTED = 30000
+
+NUM_OUTER_ITERATIONS = 20
 
 def disable_turbo_boost():
     os.system('echo "1" | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo')
@@ -82,20 +84,17 @@ STATS_FILE_SORTED = "stats-sorted.txt"
 def minimize(bench_name, inner_iterations):
     best_time_so_far = float('+inf')
     BEST_LOOP_FILENAME = f"loops_best_{bench_name}"
+    print(bench_name)    
     for i in range(N_ITERS):
         print(i)
         no_progress_counter = 0
         try:
             while True:
-                contents = os.popen(f"{PYPY_PATH} {EXTRA_OPTS} src/test/are-we-fast-yet/Python/harness.py {bench_name} 10 {inner_iterations}").readlines()
-                last_iteration = None
-                for line in contents:
-                    if line.strip().startswith(f"{bench_name}: iterations="):
-                        last_iteration = line
-                assert last_iteration is not None
-                print(last_iteration)
-                match = AVERAGE_PAT.match(last_iteration)
-                time_taken = float(match.group(1))
+                start = time.time()
+                os.system(f"{PYPY_PATH} {EXTRA_OPTS} src/test/are-we-fast-yet/Python/harness.py {bench_name} {NUM_OUTER_ITERATIONS} {inner_iterations}")
+                end = time.time()
+                time_taken = end - start
+                print(time_taken)
                 if time_taken < best_time_so_far * 0.96:
                     best_time_so_far = time_taken
                     no_progress_counter = 0
@@ -112,15 +111,10 @@ def minimize(bench_name, inner_iterations):
             mutate()
     with open(STATS_FILE, "a") as fp:
         # Note: no extra opts here, so it's just default pypy!
-        contents = os.popen(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} 10 {inner_iterations}").readlines()
-        last_iteration = None
-        for line in contents:
-            if line.strip().startswith(f"{bench_name}: iterations="):
-                last_iteration = line
-        assert last_iteration is not None
-        print(last_iteration)
-        match = AVERAGE_PAT.match(last_iteration)
-        time_taken = float(match.group(1))
+        start = time.time()
+        os.system(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} {NUM_OUTER_ITERATIONS} {inner_iterations}")
+        end = time.time()
+        time_taken = end - start
         pct_reduction = (best_time_so_far - time_taken) / time_taken * 100
         fp.write(f"{bench_name},{time_taken},{best_time_so_far},{pct_reduction}\n")
 

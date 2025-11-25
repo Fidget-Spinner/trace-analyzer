@@ -52,4 +52,4 @@ if len(sys.argv) < 2:
 
 run = process_arguments(sys.argv)
 run.run_benchmark()
-run.print_total()
+# run.print_total()

@@ -36,23 +36,23 @@ class Run:
         self._inner_iterations = 1
 
     def run_benchmark(self):
-        print("Starting " + self._name + " benchmark ...")
+        # print("Starting " + self._name + " benchmark ...")
 
         self._do_runs(self._benchmark_suite())
-        self._report_benchmark()
-        print()
+        # self._report_benchmark()
+        # print()
 
     def measure(self, bench):
-        start_time = perf_counter_ns()
+        # start_time = perf_counter_ns()
         if not bench.inner_benchmark_loop(self._inner_iterations):
             raise Exception("Benchmark failed with incorrect result")
 
-        end_time = perf_counter_ns()
-        run_time = (end_time - start_time) // 1000
+        # end_time = perf_counter_ns()
+        # run_time = (end_time - start_time) // 1000
 
-        self._print_result(run_time)
+        # self._print_result(run_time)
 
-        self._total += run_time
+        # self._total += run_time
 
     def _do_runs(self, bench):
         for _ in range(self._num_iterations):
