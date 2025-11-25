@@ -41,15 +41,16 @@ def bench(bench_name, inner_iterations):
         match = AVERAGE_PAT.match(last_iteration)
         time_taken = float(match.group(1))
         default_pypy_timings.append(time_taken)
-    best_ci = confidence_interval(best_loopfile_timings, confidence=0.99)
-    default_ci = confidence_interval(default_pypy_timings, confidence=0.99)
+    low_best, high_best = confidence_interval(best_loopfile_timings, confidence=0.99)
+    low_default, high_default = confidence_interval(default_pypy_timings, confidence=0.99)
 
     best_mean = sum(best_loopfile_timings) / N_ITERS
     default_mean = sum(default_pypy_timings) / N_ITERS
 
     reduction = ((best_mean - default_mean) / default_mean * 100)
+    probably_significant = not ((low_best < default_mean < high_best) or (low_default < best_mean < high_default))
     with open(BENCH_FILE, "a") as fp:
-        fp.write(f"{bench_name}, {default_mean} {default_ci}, {best_mean:.2f} {best_ci:.2f}, {reduction:.2f} \n")
+        fp.write(f"{bench_name},{default_mean} ({low_default:.2f}--{high_default:.2f}),{best_mean:.2f} ({low_best:.2f}--{high_best:.2f}),{reduction:.2f},{probably_significant}\n")
 
 
 from statistics import NormalDist
@@ -59,7 +60,7 @@ def confidence_interval(data, confidence=0.99):
     dist = NormalDist.from_samples(data)
     z = NormalDist().inv_cdf((1 + confidence) / 2.)
     h = dist.stdev * z / ((len(data) - 1) ** .5)
-    return f"({dist.mean - h:.2f}--{dist.mean + h:.2f})"
+    return dist.mean - h, dist.mean + h
 
 if __name__ == "__main__":
     try:
