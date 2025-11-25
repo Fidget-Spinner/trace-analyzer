@@ -57,7 +57,7 @@ def confidence_interval(data, confidence=0.99):
     dist = NormalDist.from_samples(data)
     z = NormalDist().inv_cdf((1 + confidence) / 2.)
     h = dist.stdev * z / ((len(data) - 1) ** .5)
-    return f"({dist.mean - h:.2f}, {dist.mean + h:.2f})"
+    return f"({dist.mean - h:.2f}--{dist.mean + h:.2f})"
 
 if __name__ == "__main__":
     try:
