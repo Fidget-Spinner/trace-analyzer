@@ -10,6 +10,7 @@ from search import AWFY_BENCHMARKS, AVERAGE_PAT
 PYPY_PATH = sys.argv[1]
 
 BENCH_FILE = "bench.txt"
+BENCH_FILE_SORTED = "bench-sorted.txt"
 
 def bench(bench_name, inner_iterations):
     BEST_LOOP_FILENAME = f"loops_best_{bench_name}"
@@ -67,6 +68,17 @@ if __name__ == "__main__":
             pass    
         for bench_name, inner_iterations in AWFY_BENCHMARKS.items():
             bench(bench_name, inner_iterations)
+        with open(BENCH_FILE, "r") as fp:
+            lines = fp.readlines()
+            contents = [x.split(",") for x in lines]
+            for t in contents:
+                t[3] = float(t[3].strip())
+            contents.sort(key=lambda a:a[3])
+            for t in contents:
+                t[3] = f"{t[3]:.2f}"
+            with open(BENCH_FILE_SORTED, "w") as fp:
+                for line in contents:
+                    fp.write(",".join(line) + "\n")            
     finally:
         # enable_turbo_boost()
         pass
