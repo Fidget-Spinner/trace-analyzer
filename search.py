@@ -86,7 +86,7 @@ def minimize(bench_name, inner_iterations):
         print(i)
         no_progress_counter = 0
         try:
-            for _ in range(N_ITERS):
+            while True:
                 contents = os.popen(f"{PYPY_PATH} {EXTRA_OPTS} src/test/are-we-fast-yet/Python/harness.py {bench_name} 10 {inner_iterations}").readlines()
                 last_iteration = None
                 for line in contents:
@@ -98,6 +98,7 @@ def minimize(bench_name, inner_iterations):
                 time_taken = float(match.group(1))
                 if time_taken < best_time_so_far * 0.96:
                     best_time_so_far = time_taken
+                    no_progress_counter = 0
                     print(f"BETTER TIME FOUND: {best_time_so_far}")
                     os.system(f"cp {LOOP_FILENAME} {BEST_LOOP_FILENAME}")
                 else:
