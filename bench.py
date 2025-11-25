@@ -47,7 +47,7 @@ def bench(bench_name, inner_iterations):
     default_mean = sum(default_pypy_timings) / N_ITERS
 
     with open(BENCH_FILE, "a") as fp:
-        fp.write(f"{bench_name}, {default_mean} {default_ci}, {best_mean} {best_ci}\n")
+        fp.write(f"{bench_name}, {default_mean} {default_ci}, {best_mean} {best_ci}, {((best_mean - default_mean) / default_mean * 100):.2f} \n")
 
 
 from statistics import NormalDist
