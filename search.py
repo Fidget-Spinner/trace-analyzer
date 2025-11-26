@@ -9,7 +9,7 @@ MAX_NO_PROGRESS_THRESHOLD = 5
 
 MAX_LOOPS_SUPPORTED = 30000
 
-NUM_OUTER_ITERATIONS = 20
+NUM_OUTER_ITERATIONS = 10
 
 def disable_turbo_boost():
     os.system('echo "1" | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo')
@@ -66,10 +66,10 @@ AWFY_BENCHMARKS = {
     "Json": 100,
     "CD": 250,
     "Havlak": 1500,
-    "Bounce": 1500,
+    # "Bounce": 1500,
     "List": 1500,
-    "Mandelbrot": 500,
-    "NBody": 250000,
+    "Mandelbrot": 750,
+    "NBody": 500000,
     "Permute": 1000,
     "Queens": 1000,
     "Sieve": 3000,

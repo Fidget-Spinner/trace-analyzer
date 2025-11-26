@@ -169,6 +169,8 @@ class NBody(Benchmark):
         if inner_iterations == 1:
             return result == -0.16907495402506745
 
+        if inner_iterations == 500000:
+            return result == -0.1690965666661507
         print("No verification result for " + str(inner_iterations) + " found")
         print("Result is: " + str(result))
         return False
