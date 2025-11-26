@@ -3,7 +3,7 @@ import time
 import sys
 import subprocess
 
-N_ITERS = 25
+N_ITERS = 12
 
 MAX_NO_PROGRESS_THRESHOLD = 5
 
