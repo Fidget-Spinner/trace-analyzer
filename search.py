@@ -95,7 +95,7 @@ def minimize(bench_name, inner_iterations):
                 end = time.time()
                 time_taken = end - start
                 print(time_taken)
-                if time_taken < best_time_so_far * 0.96:
+                if time_taken < best_time_so_far * 0.99:
                     best_time_so_far = time_taken
                     no_progress_counter = 0
                     print(f"BETTER TIME FOUND: {best_time_so_far}")
