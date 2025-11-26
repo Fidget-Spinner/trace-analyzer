@@ -5,7 +5,7 @@ import subprocess
 
 N_ITERS = 30
 
-MAX_NO_PROGRESS_THRESHOLD = 8
+MAX_NO_PROGRESS_THRESHOLD = 5
 
 MAX_LOOPS_SUPPORTED = 30000
 
@@ -29,14 +29,14 @@ EXTRA_OPTS = f"--jit counterfile={LOOP_FILENAME}"
 
 
 # add/subtract by this much from the loop file.
-PERTURB_BY = 1039
+PERTURB_BY = 12
 
 import random
 
 def perturb_by(line):
     res = []
     for num in line.split(','):
-        offset = random.choice(range(-PERTURB_BY, PERTURB_BY))
+        offset = random.choice(range(-PERTURB_BY//2, PERTURB_BY))
         res.append(f"{max(int(num) + offset, 1)}")
     return ",".join(res)
 
