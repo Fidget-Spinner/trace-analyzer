@@ -98,7 +98,7 @@ def single_step(bench_name, inner_iterations, pypy_startup_time, best_time_so_fa
             end = time.time()
             time_taken = end - start - pypy_readfile_time
             print(time_taken)
-            if time_taken < best_time_so_far * 0.99:
+            if time_taken < best_time_so_far:
                 best_time_so_far = time_taken
                 no_progress_counter = 0
                 print(f"BETTER TIME FOUND: {best_time_so_far}")
