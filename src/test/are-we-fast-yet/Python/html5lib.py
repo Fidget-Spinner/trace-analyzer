@@ -20,7 +20,7 @@ from benchmark import Benchmark
 
 
 
-class Go(Benchmark):
+class Html5Lib(Benchmark):
     def inner_benchmark_loop(self, inner_iterations):
         filename = os.path.join(os.path.dirname(__file__),
                             "data", "w3_tr_html5.html")
