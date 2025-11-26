@@ -3,9 +3,9 @@ import time
 import sys
 import subprocess
 
-N_ITERS = 10
+N_ITERS = 20
 
-MAX_NO_PROGRESS_THRESHOLD = 8
+MAX_NO_PROGRESS_THRESHOLD = 6
 
 MAX_LOOPS_SUPPORTED = 3000
 
