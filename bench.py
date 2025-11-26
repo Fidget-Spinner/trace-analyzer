@@ -38,7 +38,7 @@ def bench(bench_name, inner_iterations):
     reduction = ((best_mean - default_mean) / default_mean * 100)
     probably_significant = not (high_best >= low_default and high_default  >= low_best)
     with open(BENCH_FILE, "a") as fp:
-        fp.write(f"{bench_name},{default_mean} (±{(high_default-low_default):.2f}),{best_mean:.2f} (±{(high_best - low_best):.2f}),{reduction:.2f},{probably_significant}\n")
+        fp.write(f"{bench_name},{default_mean:.2f} (±{(high_default-low_default):.2f}),{best_mean:.2f} (±{(high_best - low_best):.2f}),{reduction:.2f},{probably_significant}\n")
 
 from statistics import NormalDist
 
