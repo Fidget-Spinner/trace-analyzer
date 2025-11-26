@@ -19,16 +19,25 @@ def bench(bench_name, inner_iterations):
     best_loopfile_timings = []
     for _ in range(N_ITERS):
         start = time.time()
-        os.system(f"{PYPY_PATH} {EXTRA_OPTS} src/test/are-we-fast-yet/Python/harness.py {bench_name} 10 {inner_iterations}")
+        os.system(f"{PYPY_PATH} -c 'pass'")
         end = time.time()
-        time_taken = end - start
+        pypy_startup_time = end - start
+        start = time.time()
+        os.system(f"{PYPY_PATH} {EXTRA_OPTS} -c 'pass'")
+        end = time.time()
+        pypy_startup_plus_readfile = end - start
+        pypy_readfile_time = pypy_startup_plus_readfile - pypy_startup_time
+        start = time.time()
+        os.system(f"{PYPY_PATH} {EXTRA_OPTS} src/test/are-we-fast-yet/Python/harness.py {bench_name} {NUM_OUTER_ITERATIONS} {inner_iterations}")
+        end = time.time()
+        time_taken = end - start - pypy_readfile_time
         best_loopfile_timings.append(time_taken)
 
     default_pypy_timings = []
     for _ in range(N_ITERS):
         start = time.time()
         # Note: no extra opts here, so it's just default pypy!
-        os.system(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} 10 {inner_iterations}")
+        os.system(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} {NUM_OUTER_ITERATIONS} {inner_iterations}")
         end = time.time()
         time_taken = end - start
         default_pypy_timings.append(time_taken)
