@@ -12,8 +12,9 @@ __author__ = "collinwinter@google.com (Collin Winter)"
 
 
 def bench_html5lib(html_file):
-    html_file.seek(0)
-    html5lib.parse(html_file)
+    # html_file.seek(0)
+    print(dir(html5lib))
+    # html5lib.parse(html_file)
 
 
 from benchmark import Benchmark
