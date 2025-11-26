@@ -106,7 +106,7 @@ def single_step(bench_name, inner_iterations, pypy_startup_time, best_time_so_fa
             else:
                 no_progress_counter += 1
                 if no_progress_counter >= MAX_NO_PROGRESS_THRESHOLD:
-                    initialize_loopfile()
+                    # initialize_loopfile()
                     raise NoProgressException()
             mutate()
     except NoProgressException:
