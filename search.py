@@ -3,7 +3,7 @@ import time
 import sys
 import subprocess
 
-N_ITERS = 20
+N_ITERS = 15
 
 MAX_NO_PROGRESS_THRESHOLD = 6
 
@@ -77,6 +77,8 @@ AWFY_BENCHMARKS = {
     "Storage": 1000,
     "Towers": 600,
     "Go": 1,
+    "Html5": 10,
+    "Aes": 20,
 }
 
 STATS_FILE = "stats.txt"
