@@ -18,15 +18,19 @@ def bench_html5lib(html_file):
 
 from benchmark import Benchmark
 
-
+HTML_FILE = {'html_file': None}
 
 class Html5(Benchmark):
     def inner_benchmark_loop(self, inner_iterations):
-        filename = os.path.join(os.path.dirname(__file__),
-                            "data", "w3_tr_html5.html")
-        # Get all our IO over with early.
-        with open(filename, "rb") as fp:
-            html_file = io.BytesIO(fp.read())
+        if HTML_FILE['html_file'] is not None:
+            html_file = HTML_FILE['html_file']
+        else:
+            filename = os.path.join(os.path.dirname(__file__),
+                                "data", "w3_tr_html5.html")
+            # Get all our IO over with early.
+            with open(filename, "rb") as fp:
+                html_file = io.BytesIO(fp.read())
+            HTML_FILE['html_file'] = html_file
         for _ in range(inner_iterations):
             bench_html5lib(html_file)
         return True
