@@ -9,8 +9,6 @@ MAX_NO_PROGRESS_THRESHOLD = 6
 
 MAX_LOOPS_SUPPORTED = 3000
 
-NUM_OUTER_ITERATIONS = 20
-
 def disable_turbo_boost():
     os.system('echo "1" | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo')
 
@@ -62,30 +60,35 @@ AVERAGE_PAT = re.compile(f".+ average: (\d+)")
 class NoProgressException(Exception): pass
 
 AWFY_BENCHMARKS = {
-    "DeltaBlue": 12000,
-    "Richards": 100,
-    "Json": 100,
-    "CD": 250,
-    "Havlak": 1500,
-    # "Bounce": 1500, # too short
-    "List": 1500,
-    "Mandelbrot": 750,
-    "NBody": 500000,
-    "Permute": 1000,
-    "Queens": 1000,
-    "Sieve": 3000,
-    "Storage": 1000,
-    "Towers": 600,
-    "Go": 1,
-    "Html5": 10,
-    "Aes": 20,
+    "DeltaBlue": (20, 12000),
+    "Richards": (20, 100),
+    "Json": (20, 100),
+    "CD": (10, 250),
+    "Havlak": (10, 1500),
+    "Bounce": (40, 1500),
+    "List": (10, 1500),
+    "Mandelbrot": (30, 750),
+    "NBody": (30, 500000),
+    "Permute": (20, 1000),
+    "Queens": (20, 1000),
+    "Sieve": (20, 3000),
+    "Storage": (20, 1000),
+    "Towers": (20, 600),
+    "Go": (20, 1),
+    "Html5": (10, 10),
+    "Aes": (20, 20),
+    "Mlir": (5, 1),
+    "ShortestPath": (1, 1),
+    "KCore": (1, 1),
+    "ConnectedComponents": (1, 1)
 }
+
 
 STATS_FILE = "stats.txt"
 STATS_FILE_SORTED = "stats-sorted.txt"
 
 
-def single_step(bench_name, inner_iterations, pypy_startup_time, best_time_so_far):
+def single_step(bench_name, outer_iterations, inner_iterations, pypy_startup_time, best_time_so_far):
     BEST_LOOP_FILENAME = f"loops_best_{bench_name}"
     no_progress_counter = 0
     try:
@@ -96,7 +99,7 @@ def single_step(bench_name, inner_iterations, pypy_startup_time, best_time_so_fa
             pypy_startup_plus_readfile = end - start
             pypy_readfile_time = pypy_startup_plus_readfile - pypy_startup_time
             start = time.time()
-            os.system(f"{PYPY_PATH} {EXTRA_OPTS} src/test/are-we-fast-yet/Python/harness.py {bench_name} {NUM_OUTER_ITERATIONS} {inner_iterations}")
+            os.system(f"{PYPY_PATH} {EXTRA_OPTS} src/test/are-we-fast-yet/Python/harness.py {bench_name} {outer_iterations} {inner_iterations}")
             end = time.time()
             time_taken = end - start - pypy_readfile_time
             print(time_taken)
@@ -117,7 +120,7 @@ def single_step(bench_name, inner_iterations, pypy_startup_time, best_time_so_fa
         mutate()
     return best_time_so_far
 
-def minimize(bench_name, inner_iterations):
+def minimize(bench_name, outer_iterations, inner_iterations):
     best_time_so_far = float('+inf')
     print(bench_name)
     start = time.time()
@@ -127,7 +130,7 @@ def minimize(bench_name, inner_iterations):
     initialize_loopfile()
     for i in range(N_ITERS):
         print(i)
-        best_time_so_far = single_step(bench_name, inner_iterations, pypy_startup_time, best_time_so_far)
+        best_time_so_far = single_step(bench_name, outer_iterations, inner_iterations, pypy_startup_time, best_time_so_far)
 
 
 def initialize_loopfile():
@@ -148,8 +151,8 @@ if __name__ == "__main__":
         # Clear the file
         with open(STATS_FILE, "w") as fp:
             pass    
-        for bench_name, inner_iterations in AWFY_BENCHMARKS.items():
-            minimize(bench_name, inner_iterations)
+        for bench_name, (outer_iterations, inner_iterations) in AWFY_BENCHMARKS.items():
+            minimize(bench_name, outer_iterations, inner_iterations)
         with open(STATS_FILE, "r") as fp:
             lines = fp.readlines()
             contents = [x.split(",") for x in lines]

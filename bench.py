@@ -5,14 +5,14 @@ import subprocess
 
 N_ITERS = 30
 
-from search import AWFY_BENCHMARKS, AVERAGE_PAT, NUM_OUTER_ITERATIONS
+from search import AWFY_BENCHMARKS
 
 PYPY_PATH = sys.argv[1]
 
 BENCH_FILE = "bench.txt"
 BENCH_FILE_SORTED = "bench-sorted.txt"
 
-def bench(bench_name, inner_iterations):
+def bench(bench_name, outer_iterations, inner_iterations):
     print(bench_name)
     BEST_LOOP_FILENAME = f"loops_best_{bench_name}"
     EXTRA_OPTS = f"--jit counterfile={BEST_LOOP_FILENAME}"
@@ -28,7 +28,7 @@ def bench(bench_name, inner_iterations):
         pypy_startup_plus_readfile = end - start
         pypy_readfile_time = pypy_startup_plus_readfile - pypy_startup_time
         start = time.time()
-        os.system(f"{PYPY_PATH} {EXTRA_OPTS} src/test/are-we-fast-yet/Python/harness.py {bench_name} {NUM_OUTER_ITERATIONS} {inner_iterations}")
+        os.system(f"{PYPY_PATH} {EXTRA_OPTS} src/test/are-we-fast-yet/Python/harness.py {bench_name} {outer_iterations} {inner_iterations}")
         end = time.time()
         time_taken = end - start - pypy_readfile_time
         best_loopfile_timings.append(time_taken)
@@ -37,7 +37,7 @@ def bench(bench_name, inner_iterations):
     for _ in range(N_ITERS):
         start = time.time()
         # Note: no extra opts here, so it's just default pypy!
-        os.system(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} {NUM_OUTER_ITERATIONS} {inner_iterations}")
+        os.system(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} {outer_iterations} {inner_iterations}")
         end = time.time()
         time_taken = end - start
         default_pypy_timings.append(time_taken)
@@ -64,8 +64,8 @@ if __name__ == "__main__":
         # Clear the file
         with open(BENCH_FILE, "w") as fp:
             pass    
-        for bench_name, inner_iterations in AWFY_BENCHMARKS.items():
-            bench(bench_name, inner_iterations)
+        for bench_name, (outer_iterations, inner_iterations) in AWFY_BENCHMARKS.items():
+            bench(bench_name, outer_iterations, inner_iterations)
         with open(BENCH_FILE, "r") as fp:
             lines = fp.readlines()
             contents = [x.split(",") for x in lines]

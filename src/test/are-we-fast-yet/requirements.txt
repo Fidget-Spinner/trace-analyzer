@@ -1,2 +1,4 @@
 html5lib==1.1
 pyaes==1.6.1
+xdsl==0.54.3
+networkx==3.4.2
