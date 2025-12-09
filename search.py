@@ -77,7 +77,7 @@ AWFY_BENCHMARKS = {
     "Go": (20, 1),
     "Html5": (10, 10),
     "Aes": (20, 20),
-    "Mlir": (5, 1),
+    "Mlir": (20, 20),
     "ShortestPath": (1, 1),
     "KCore": (1, 1),
     "ConnectedComponents": (1, 1)
