@@ -34,27 +34,46 @@ class Run:
         self._total = 0
         self._num_iterations = 1
         self._inner_iterations = 1
+        self._instability_check = 0
 
     def run_benchmark(self):
         # print("Starting " + self._name + " benchmark ...")
 
         self._do_runs(self._benchmark_suite())
         # self._report_benchmark()
-        # print()
+        print()
 
     def measure(self, bench):
-        # start_time = perf_counter_ns()
+        start_time = perf_counter_ns()
         if not bench.inner_benchmark_loop(self._inner_iterations):
             raise Exception("Benchmark failed with incorrect result")
 
-        # end_time = perf_counter_ns()
-        # run_time = (end_time - start_time) // 1000
+        end_time = perf_counter_ns()
+        run_time = (end_time - start_time) / 1_000_000_000
 
         # self._print_result(run_time)
 
-        # self._total += run_time
+        self._total += run_time
 
     def _do_runs(self, bench):
+        # For instability checks, warmup first and check
+        # instability of traces.
+        if self._instability_check:
+            import pypyjit
+            pypyjit.set_param("check_instability=1")
+
+        for _ in range(self._num_iterations):
+            if not bench.inner_benchmark_loop(self._inner_iterations):
+                raise Exception("Benchmark failed with incorrect result")
+
+        if self._instability_check:
+            import pypyjit
+            pypyjit.set_param("check_instability=0")
+
+        if not bench.inner_benchmark_loop(self._inner_iterations):
+            raise Exception("Benchmark failed with incorrect result")
+
+
         for _ in range(self._num_iterations):
             self.measure(bench)
 
@@ -67,14 +86,14 @@ class Run:
             + str(round(self._total / self._num_iterations))
             + "us total: "
             + str(self._total)
-            + "us\n"
+            + "s\n"
         )
 
     def _print_result(self, run_time):
-        print(self._name + ": iterations=1 runtime: " + str(run_time) + "us")
+        print(self._name + ": iterations=1 runtime: " + str(run_time) + "s")
 
     def print_total(self):
-        print("Total Runtime: " + str(self._total) + "us")
+        print("Total Runtime: " + str(self._total) + "s")
 
     def set_num_iterations(self, num_iterations):
         self._num_iterations = num_iterations

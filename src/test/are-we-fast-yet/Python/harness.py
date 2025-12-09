@@ -31,6 +31,8 @@ def process_arguments(args):
         new_run.set_num_iterations(int(args[2]))
         if len(args) > 3:
             new_run.set_inner_iterations(int(args[3]))
+            if len(args) > 4:
+                new_run._instability_check = int(args[4])
 
     return new_run
 
@@ -52,4 +54,4 @@ if len(sys.argv) < 2:
 
 run = process_arguments(sys.argv)
 run.run_benchmark()
-# run.print_total()
+run.print_total()
