@@ -20,7 +20,9 @@ def bench(bench_name, outer_iterations, inner_iterations):
     print(bench_name)
     best_loopfile_timings = []
     for _ in range(N_ITERS):
-        lines = os.popen(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} {outer_iterations} {inner_iterations} 1").readlines()
+        p = os.popen(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} {outer_iterations} {inner_iterations} 1")
+        lines = p.readlines()
+        p.close()
         for line in lines:
             match = re.match(TOTAL_RUNTIME_PAT, line)
             if match:
@@ -34,7 +36,9 @@ def bench(bench_name, outer_iterations, inner_iterations):
     default_pypy_timings = []
     for _ in range(N_ITERS):
         # Note: no extra opts here, so it's just default pypy!
-        lines = os.popen(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} {outer_iterations} {inner_iterations}").readlines()
+        p = os.popen(f"{PYPY_PATH} src/test/are-we-fast-yet/Python/harness.py {bench_name} {outer_iterations} {inner_iterations}")
+        lines = p.readlines()
+        p.close()
         for line in lines:
             match = re.match(TOTAL_RUNTIME_PAT, line)
             if match:
